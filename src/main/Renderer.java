@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -60,7 +61,7 @@ public class Renderer {
 		double fov = 60;
 		int nb_samples = 1;
 		String filename = "output.png";
-		RenderMode mode_if_no_input = RenderMode.ACCELERATION;
+		RenderMode mode_if_no_input = RenderMode.STANDARD;
 		
 		/**********************************************************************
 		 * Parse the command line arguments
@@ -228,15 +229,19 @@ public class Renderer {
 				public void run() {
 					try {
 						// iterate over the contents of the tile 
+						double stratumWidth = 1.0/sample_dimension;
 						for (int y = tile.yStart; y < tile.yEnd; ++y) {
 							for (int x = tile.xStart; x < tile.xEnd; ++x) {
 								for (int i =0; i < sample_dimension ; i++) {
 									for (int j = 0; j < sample_dimension ; j++) {
-										
-										
+										Random randomX = new Random();
+										Random randomY = new Random();
+										double jitterX = (randomX.nextDouble() - 0.5) * stratumWidth;
+										double jitterY = (randomY.nextDouble() - 0.5) * stratumWidth;
 										// create a ray through the center of the pixel.
-										Ray ray = camera.generateRay(new Sample(
-												x + 1.0/(2*sample_dimension) + i*1.0/sample_dimension, y + 1.0/(2*sample_dimension) + j*1.0/sample_dimension));
+										double x_co = x + 0.5*stratumWidth + i*stratumWidth + jitterX;
+										double y_co = y + 0.5*stratumWidth + j*stratumWidth + jitterY;
+										Ray ray = camera.generateRay(new Sample(x_co, y_co));
 										
 										// test the scene on intersections
 										Intersection currentClosest = null;
@@ -270,7 +275,6 @@ public class Renderer {
 												}
 											} else if (mode.equals(RenderMode.ACCELERATION)) {
 												buffer.getPixel(x, y).add(new RGBSpectrum(0, 0, nb));
-												break;
 											}
 											
 										}
