@@ -15,6 +15,7 @@ import shape.Cylinder;
 import shape.PolygonMesh;
 import shape.Shape;
 import shape.Sphere;
+import texture.RepeatedTextureMap;
 import texture.TextureMap;
 import texture.UniformColorTexture;
 
@@ -71,29 +72,30 @@ public class Scene {
 	public static Scene getExampleScene2() {
 		Transformation t_table = Transformation.translate(0, -4, -8).append(
 				Transformation.scale(0.4, 0.4, 0.4));
-		Transformation t_sphere = Transformation.translate(1, -0.7, -6.3).append(
+		Transformation t_sphere = Transformation.translate(1, -0.7, -7).append(
 				Transformation.scale(0.5, 0.5, 0.5));
-		Transformation t_box = Transformation.translate(-1.5, -1.2, -7.5).append(
-				Transformation.scale(1, 1, 1)).append(Transformation.rotateY(-10));
-		Transformation t_cyl = Transformation.translate(0, -1.2, -6.2).append(
-				Transformation.scale(0.25,1,0.25));
+		Transformation t_2 = Transformation.translate(-1.5, -1.2, -7.5).append(
+				Transformation.scale(0.3, 0.3, 0.3)).append(Transformation.rotateY(-10));
+		Transformation t_3 = Transformation.translate(0, -1.2, -6.2).append(
+				Transformation.scale(1,1,1));
 		Transformation t_floor =  Transformation.translate(0,-4, -15).append(Transformation.scale(13, 1, 10));
 		Transformation t_wall_behind = Transformation.translate(0, 10, -20).append(Transformation.rotateX(90)).append(Transformation.scale(13, 1, 15));
 		final Sphere bol = new Sphere(t_sphere, new TextureMap("worldmap.jpg"));
-		final AxisAlignedBox box= new AxisAlignedBox(t_box, new UniformColorTexture(new RGBSpectrum(255,0,0)));
-		final Cylinder cyl = new Cylinder(t_cyl, new UniformColorTexture(new RGBSpectrum(0,0,255)));
 		final PolygonMesh floor = new PolygonMesh("plane.obj", t_floor);
-		final PolygonMesh table = new PolygonMesh("table.obj", t_table);
+		final PolygonMesh table = new PolygonMesh("table.obj", t_table, new TextureMap("wood.jpg"));
 		final PolygonMesh wallBehind = new PolygonMesh("plane.obj", t_wall_behind, new TextureMap("dambord.jpg"));
+		final PolygonMesh bunny = new PolygonMesh("bunny.obj", t_2, new TextureMap("bunny.jpg"));
+		final PolygonMesh teapot = new PolygonMesh("teapot.obj", t_3, new RepeatedTextureMap("dambord.jpg", 3, 5));
 		List<LightSource> ls = new ArrayList<>();
 		List<Shape> s = new ArrayList<>();
-		s.add(cyl);
+		s.add(bunny);
 		s.add(bol);
-		s.add(box);
+		s.add(teapot);
+		s.add(bol);
 		s.add(table);
 		s.add(floor);
 		s.add(wallBehind);
-		ls.add(new PointLightSource(new Point(1,1,-5), new RGBSpectrum(255,255,255)));
+		ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
 		//ls.add(new PointLightSource(new Point(-5,5,-3), new RGBSpectrum(255,0,0)));
 		return new Scene(ls, s);
 		

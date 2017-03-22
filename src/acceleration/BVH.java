@@ -15,7 +15,7 @@ public class BVH {
 	private static int SPLIT_Z = 2;
 	private static int currentSplit = 0;
 	
-	private static int nb_shapes = 6;
+	private static int nb_shapes = 8;
 	
 	public static List<Shape> createBVH(List<Shape> shapes) {
 		List<Shape> result = new ArrayList<>();
@@ -38,7 +38,6 @@ public class BVH {
 	
 
 	public static BV buildBV(List<Shape> shapes) {
-		
 		Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
 		Point leftBottom = new Point(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
 		BV superbv = new BV(leftBottom, rightTop);

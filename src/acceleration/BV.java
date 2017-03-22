@@ -85,7 +85,11 @@ public class BV extends AxisAlignedBox {
 		this.addAllShapes(other.getShapes());
 	}
 	
-	@Override
+	/*@Override
+	public Intersection getIntersection(Ray ray) {
+		return super.getIntersection(ray);
+	}*/
+	
 	public Intersection getIntersection(Ray ray) {
 		Intersection i = super.getIntersection(ray);
 		if (i != null) {
