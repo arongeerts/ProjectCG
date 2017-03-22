@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import acceleration.BV;
+import acceleration.Pair;
 import camera.PerspectiveCamera;
 import film.FrameBuffer;
 import film.RGBSpectrum;
@@ -61,7 +62,7 @@ public class Renderer {
 		double fov = 60;
 		int nb_samples = 1;
 		String filename = "output.png";
-		RenderMode mode_if_no_input = RenderMode.STANDARD;
+		RenderMode mode_if_no_input = RenderMode.NORMAL_MAP;
 		
 		/**********************************************************************
 		 * Parse the command line arguments
@@ -205,7 +206,7 @@ public class Renderer {
 			scene = Scene.getExampleScene2();
 			System.out.println("initialised the scene in: " + (System.currentTimeMillis() - start) +" ms");;
 		}
-		final int sample_dimension = (int) Math.sqrt(nb_samples);
+		final int sample_dimension = nb_samples;
 		final List<Shape> shapes = scene.getShapes();
 		final List<LightSource> lightsources = scene.getLightsources();
 		final RenderMode mode = mode_if_no_input;
@@ -251,8 +252,11 @@ public class Renderer {
 										
 										
 										// test the scene on intersections
-										Intersection currentClosest = null;
-										int nb = 1;
+										//Intersection currentClosest = null;
+										Pair<Intersection, Integer> closestIntersection = getClosestIntersection(ray, shapes);
+										Intersection currentClosest = closestIntersection.getFirst();
+										int nb = closestIntersection.getSecond();
+										/*int nb = 1;
 										for (Shape shape : shapes) {
 											nb += 1;
 											Intersection currentInt = shape.getIntersection(ray);
@@ -263,27 +267,26 @@ public class Renderer {
 													currentClosest = currentInt;	
 												}
 											}
-										}
+										}*/
 										//Intersection currentClosest = getClosestIntersection(ray, shapes);
 										// add a color contribution to the pixel
+										
 										if (currentClosest != null) {
 											RGBSpectrum totalColor = new RGBSpectrum(0,0,0);
 											if (mode.equals(RenderMode.STANDARD)) {
 												for (LightSource ls : lightsources) {
-													if (! (currentClosest.getShape() instanceof BV) && ls.isVisibleFrom(currentClosest, shapes)) {
+													if (ls.isVisibleFrom(currentClosest, shapes)) {
 														RGBSpectrum colorContribution = getColorContribution(ray, currentClosest, ls);
 														totalColor = totalColor.add(colorContribution);
 													}
-													buffer.getPixel(x, y).add(totalColor);
 												}
+												buffer.getPixel(x, y).add(totalColor);
 											} else if (mode.equals(RenderMode.NORMAL_MAP)) {
-												if (!(currentClosest.getShape() instanceof BV)) {
-													buffer.getPixel(x, y).add(getFalseColor(currentClosest));
-												} 
-											} else if (mode.equals(RenderMode.ACCELERATION)) {
-												buffer.getPixel(x, y).add(new RGBSpectrum(0, 0,nb));
-											}
-											
+												buffer.getPixel(x, y).add(getFalseColor(currentClosest));
+											} 
+										}
+										if (mode.equals(RenderMode.ACCELERATION)) {
+											buffer.getPixel(x, y).add(new RGBSpectrum(0, 0, nb));
 										}
 									}
 								}
@@ -310,45 +313,8 @@ public class Renderer {
 					reporter.update(tile.getWidth() * tile.getHeight());
 
 				}
-
-				private Intersection getClosestIntersection(Ray ray, List<Shape> shapes) {
-					Intersection currentClosest = null;
-					for (Shape shape : shapes) {
-						Intersection i = shape.getIntersection(ray);
-						if (i != null) {
-							if (i.getShape() instanceof BV) {
-								List<BV> children = ((BV) i.getShape()).getChildren();
-								while (! children.isEmpty()) {
-									BV bv = children.get(0);
-									i = bv.getIntersection(ray);
-									if (i != null) {
-										children.addAll(bv.getChildren());
-									}
-									for (Shape s : bv.getShapes()) {
-										Intersection currentInt = s.getIntersection(ray);
-										if (currentInt != null) {
-											System.out.println("NOT NULL");
-											if (currentClosest == null || currentClosest.getDistance() > currentInt.getDistance()) {
-												currentClosest = currentInt;	
-											}
-										}
-									}
-									children.remove(bv);
-								}
-							}
-							else {
-								Intersection currentInt = shape.getIntersection(ray);
-								if (currentInt != null) {
-									if (currentClosest == null || currentClosest.getDistance() > currentInt.getDistance()) {
-										currentClosest = currentInt;	
-									}
-								}
-							}
-						}
-						
-					}
-					return currentClosest;
-				}
+				
+				
 				private RGBSpectrum getFalseColor(Intersection currentClosest) {
 					Vector normal = currentClosest.getNormal().scale(0.5);
 					return new RGBSpectrum(0.5 + normal.x, 0.5 + normal.y, 0.5 + normal.z).scale(255.0);
@@ -406,5 +372,48 @@ public class Renderer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static Pair<Intersection, Integer> getClosestIntersection(Ray ray, List<Shape> shapes) {
+		Intersection currentClosest = null;
+		int nb = 0;
+		for (Shape shape : shapes) {
+			Intersection i = shape.getIntersection(ray);
+			nb += 1;
+			if (i != null) {
+				if (i.getShape() instanceof BV) {
+					List<BV> children = new ArrayList<>();
+					children.add((BV) i.getShape());
+					while (! children.isEmpty()) {
+						BV bv = children.get(0);
+						nb += 1;
+						Intersection bv_int = bv.getIntersection(ray);
+						if (bv_int != null && (currentClosest == null || bv_int.getDistance() < currentClosest.getDistance())) {
+							children.addAll(bv.getChildren());
+							for (Shape s : bv.getShapes()) {
+								nb += 1;
+								Intersection currentInt = s.getIntersection(ray);
+								if (currentInt != null) {
+									if (currentClosest == null || currentClosest.getDistance() > currentInt.getDistance()) {
+										currentClosest = currentInt;	
+									}
+								}
+							}
+						}
+						
+						children.remove(bv);
+					}
+				}
+				else {
+					if (i != null) {
+						if (currentClosest == null || currentClosest.getDistance() > i.getDistance()) {
+							currentClosest = i;	
+						}
+					}
+				}
+			}
+			
+		}
+		return new Pair<Intersection, Integer>(currentClosest, nb);
 	}
 }

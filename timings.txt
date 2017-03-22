@@ -1,4 +1,0 @@
-Scene:					Building BVH		Rendering
-20000bollen.png 		2.704 s				15.68 s
-trex.png				11.805 s			4.98 s
-texturemapping.png		3.125 s				2.99 s

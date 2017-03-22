@@ -90,6 +90,7 @@ public class BVH {
 			}
 		}
 		currentSplit = (currentSplit + 1) % 2;
+		superbv.clearShapes();
 		return new Pair<BV, BV>(first, second);
 	}
 

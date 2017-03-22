@@ -2,13 +2,12 @@ package light;
 
 import java.util.List;
 
-import acceleration.BV;
 import film.RGBSpectrum;
+import main.Renderer;
 import math.Point;
 import math.Ray;
+import math.Vector;
 import shape.Intersection;
-import shape.MeshTriangle;
-import shape.PolygonMesh;
 import shape.Shape;
 
 public class PointLightSource implements LightSource {
@@ -32,9 +31,21 @@ public class PointLightSource implements LightSource {
 		return intensity.scale(1/(4.0*Math.PI*Math.pow(distance,2)));
 	}
 	
-	
-	
 	@Override
+	public boolean isVisibleFrom(Intersection i, List<Shape> shapes) {
+		Point p = i.getCoördinate();
+		Vector direction = position.subtract(p);
+		double selfIntersectionBias = Math.pow(10, -8);
+		p.add(direction.scale(selfIntersectionBias));
+		Ray shadowRay = new Ray(p, direction);
+		Intersection intersect = Renderer.getClosestIntersection(shadowRay, shapes).getFirst();
+		if (intersect == null || intersect.getDistance() > direction.length()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	/*@Override
 	public boolean isVisibleFrom(Intersection i, List<Shape> shapes) {
 		Point p = i.getCoördinate();
 		Ray shadowRay = new Ray(p, position.subtract(p));
@@ -64,5 +75,5 @@ public class PointLightSource implements LightSource {
 			}
 		}
 		return true;
-	}
+	}*/
 }

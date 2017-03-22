@@ -18,7 +18,7 @@ public class TextureMap implements Texture {
 				this.map = ImageIO.read(new File("src/texture/maps/" + filename));
 			} catch (IOException e1) {
 				try {
-					this.map = ImageIO.read(new File("projectCG/src/texture/maps/" + filename));
+					this.map = ImageIO.read(new File("Project/src/texture/maps/" + filename));
 				} catch (IOException e2) {
 					File f = new File("test");
 					System.out.println("could not find texturemap at " + f.getAbsolutePath());

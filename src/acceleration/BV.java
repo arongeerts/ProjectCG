@@ -58,6 +58,10 @@ public class BV extends AxisAlignedBox {
 		this.children = new ArrayList<>();
 	}
 	
+	public void clearShapes() {
+		this.shapes = new ArrayList<Shape>();
+	}
+
 	public Point getLeftBottom() {
 		return leftBottom;
 	}
@@ -85,12 +89,12 @@ public class BV extends AxisAlignedBox {
 		this.addAllShapes(other.getShapes());
 	}
 	
-	/*@Override
+	@Override
 	public Intersection getIntersection(Ray ray) {
 		return super.getIntersection(ray);
-	}*/
+	}
 	
-	public Intersection getIntersection(Ray ray) {
+	/*public Intersection getIntersection(Ray ray) {
 		Intersection i = super.getIntersection(ray);
 		if (i != null) {
 			Intersection currentClosest = null;
@@ -145,5 +149,5 @@ public class BV extends AxisAlignedBox {
 			}
 		}
 		return null;
-	}
+	}*/
 }

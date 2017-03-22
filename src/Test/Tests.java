@@ -12,6 +12,7 @@ import org.junit.Test;
 import acceleration.BV;
 import film.RGBSpectrum;
 import light.PointLightSource;
+import main.Renderer;
 import math.Point;
 import math.Ray;
 import math.Transformation;
@@ -180,6 +181,18 @@ public class Tests {
 		assertEquals(i.getShape(), s);
 	}
 	
+	@Test
+	public void testNewIntersectionMethod() {
+		Ray ray = new Ray(new Point(0,0,-5), new Vector(0,0,1));
+		BV box = new BV(new Point(-1,-1,-1), new Point(1,1,1));
+		Sphere s = new Sphere(Transformation.IDENTITY);
+		box.addShape(s);
+		List<Shape> shapes = new ArrayList<Shape>();
+		shapes.add(box);
+		assertAboutEquals(box.getIntersection(ray).getCoördinate(), new Point(0,0,-1));
+		Intersection i = Renderer.getClosestIntersection(ray, shapes).getFirst();
+		assertAboutEquals(i.getCoördinate(), new Point(0,0,-1));
+	}
 	public void assertAboutEquals(Point point1, Point point2) {
 		try {
 			assertTrue(point1.subtract(point2).length() < Math.pow(10, -5));
@@ -193,5 +206,6 @@ public class Tests {
 	public void assertAboutEquals(Vector v1, Vector v2) {
 		assertTrue(v1.subtract(v2).length() < Math.pow(10, -5));
 	}
+	
 }
 

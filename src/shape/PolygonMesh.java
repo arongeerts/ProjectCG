@@ -46,9 +46,9 @@ public class PolygonMesh implements Shape {
 			reader = new BufferedReader(new FileReader("src/shape/meshes/" + filename));
 		} catch (FileNotFoundException e1) {
 			try {
-				reader = new BufferedReader(new FileReader("projectCG/src/shape/meshes/" + filename));
+				reader = new BufferedReader(new FileReader("Project/src/shape/meshes/" + filename));
 			} catch (FileNotFoundException e2) {
-				System.out.println("could not find file");
+				System.out.println("could not find file: " + filename);
 			}
 			
 		}
