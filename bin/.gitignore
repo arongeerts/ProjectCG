@@ -1,5 +1,3 @@
-/shape/
-/texture/
 /Test/
 /acceleration/
 /camera/
@@ -10,3 +8,6 @@
 /math/
 /sampling/
 /scene/
+/shape/
+/texture/
+/util/

@@ -14,8 +14,8 @@ import texture.TransparentTexture;
 public class BV extends AxisAlignedBox {
 
 	private List<BV> children = new ArrayList<>();
-	private Point leftBottom;
-	private Point rightTop;
+	Point leftBottom;
+	Point rightTop;
 	private List<Shape> shapes = new ArrayList<>();
 	
 	public BV(Point leftBottom, Point rightTop) {
@@ -32,6 +32,10 @@ public class BV extends AxisAlignedBox {
 	
 	public void addChild(BV child) {
 		this.children.add(child);
+	}
+	
+	public void setChildren(List<BV> children) {
+		this.children = children;
 	}
 	
 	public List<Shape> getShapes() {

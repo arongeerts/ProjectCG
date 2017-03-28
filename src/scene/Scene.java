@@ -6,10 +6,12 @@ import java.util.Random;
 
 import acceleration.BVH;
 import film.RGBSpectrum;
+import light.AreaLight;
 import light.LightSource;
 import light.PointLightSource;
 import math.Point;
 import math.Transformation;
+import math.Vector;
 import shape.AxisAlignedBox;
 import shape.Cylinder;
 import shape.PolygonMesh;
@@ -85,17 +87,18 @@ public class Scene {
 		final PolygonMesh table = new PolygonMesh("table.obj", t_table, new TextureMap("wood.jpg"));
 		final PolygonMesh wallBehind = new PolygonMesh("plane.obj", t_wall_behind, new TextureMap("dambord.jpg"));
 		final PolygonMesh bunny = new PolygonMesh("bunny.obj", t_2, new TextureMap("bunny.jpg"));
-		final PolygonMesh teapot = new PolygonMesh("teapot.obj", t_3, new RepeatedTextureMap("dambord.jpg", 3, 5));
+		final PolygonMesh teapot = new PolygonMesh("teapot.obj", t_3, new RepeatedTextureMap("dambord.jpg", 5, 5));
 		List<LightSource> ls = new ArrayList<>();
 		List<Shape> s = new ArrayList<>();
 		s.add(bunny);
 		s.add(bol);
 		s.add(teapot);
-		s.add(bol);
 		s.add(table);
 		s.add(floor);
 		s.add(wallBehind);
-		ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
+		//ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
+		ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,0,0), new Vector(2,0,0), new Vector(0,2,0)));
+
 		//ls.add(new PointLightSource(new Point(-5,5,-3), new RGBSpectrum(255,0,0)));
 		return new Scene(ls, s);
 		
@@ -154,12 +157,14 @@ public class Scene {
 	}
 	
 	public static Scene getTestScene() {
-		PolygonMesh table = new PolygonMesh("table.obj", Transformation.translate(0, -4, -8).append(
-				Transformation.scale(0.4, 0.4, 0.4)));
+		Sphere sphere = new Sphere(Transformation.translate(0, 0, -5).append(Transformation.scale(0.5, 0.5, 0.5)));
+		PolygonMesh floor = new PolygonMesh("plane.obj", Transformation.translate(0,-2,-5).append(Transformation.scale(10, 10, 10)));
 		List<Shape> s = new ArrayList<>();
-		s.add(table);
+		s.add(sphere);
+		s.add(floor);
 		List<LightSource> ls = new ArrayList<>();
-		ls.add(new PointLightSource(new Point(0,0,0), new RGBSpectrum(255,255,255)));
+		//ls.add(new PointLightSource(new Point(0, 4, -5), new RGBSpectrum(255,255,255)));
+		ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,2,-4.5), new Vector(0.5,0,0.5), new Vector(-0.5,0,0.5)));
 		return new Scene(ls, s);
 	}
 	public static Scene getMuseumScene() {

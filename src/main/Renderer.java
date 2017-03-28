@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,6 +24,7 @@ import film.Tile;
 import gui.ProgressReporter;
 import gui.RenderFrame;
 import light.AmbientLight;
+import light.AreaLight;
 import light.LightSource;
 import light.PointLightSource;
 import math.Point;
@@ -33,6 +36,7 @@ import scene.Scene;
 import shape.Intersection;
 import shape.PolygonMesh;
 import shape.Shape;
+import util.Poplist;
 
 /**
  * Entry point of your renderer.
@@ -60,9 +64,9 @@ public class Renderer {
 		Point destination = new Point(0,0,-1);
 		Vector lookup = new Vector(0, 1, 0);
 		double fov = 60;
-		int nb_samples = 1;
+		int sample_dim = 5;
 		String filename = "output.png";
-		RenderMode mode_if_no_input = RenderMode.NORMAL_MAP;
+		RenderMode mode_if_no_input = RenderMode.STANDARD;
 		
 		/**********************************************************************
 		 * Parse the command line arguments
@@ -105,7 +109,7 @@ public class Renderer {
 					} else if (flag.equals("-output")) {
 						filename = arguments[++i];
 					} else if (flag.equals("-samples")) {
-						nb_samples = Integer.parseInt(arguments[++i]);
+						sample_dim = Integer.parseInt(arguments[++i]);
 					} else if (flag.equals("-input")) {
 						PolygonMesh p = new PolygonMesh(arguments[++i], Transformation.IDENTITY);
 						List<Shape> shapes = new ArrayList<>();
@@ -206,7 +210,7 @@ public class Renderer {
 			scene = Scene.getExampleScene2();
 			System.out.println("initialised the scene in: " + (System.currentTimeMillis() - start) +" ms");;
 		}
-		final int sample_dimension = nb_samples;
+		final int sample_dimension = sample_dim;
 		final List<Shape> shapes = scene.getShapes();
 		final List<LightSource> lightsources = scene.getLightsources();
 		final RenderMode mode = mode_if_no_input;
@@ -233,6 +237,7 @@ public class Renderer {
 						double stratumWidth = 1.0/sample_dimension;
 						for (int y = tile.yStart; y < tile.yEnd; ++y) {
 							for (int x = tile.xStart; x < tile.xEnd; ++x) {
+								Map<AreaLight, Poplist<PointLightSource>> lightsourceSamples = new HashMap<>();
 								for (int i =0; i < sample_dimension ; i++) {
 									for (int j = 0; j < sample_dimension ; j++) {
 										Ray ray;
@@ -249,25 +254,10 @@ public class Renderer {
 											ray = camera.generateRay(new Sample(x+0.5, y+0.5));
 										}
 										
-										
-										
 										// test the scene on intersections
-										//Intersection currentClosest = null;
 										Pair<Intersection, Integer> closestIntersection = getClosestIntersection(ray, shapes);
 										Intersection currentClosest = closestIntersection.getFirst();
-										int nb = closestIntersection.getSecond();
-										/*int nb = 1;
-										for (Shape shape : shapes) {
-											nb += 1;
-											Intersection currentInt = shape.getIntersection(ray);
-											if (currentInt != null) {
-												nb += currentInt.getDepth();
-												if (currentClosest == null || currentClosest.getDistance() > currentInt.getDistance()) {
-													if (mode.equals(RenderMode.ACCELERATION) || !(currentInt.getShape() instanceof BV))
-													currentClosest = currentInt;	
-												}
-											}
-										}*/
+										int nb_of_calculated_intersections = closestIntersection.getSecond();
 										//Intersection currentClosest = getClosestIntersection(ray, shapes);
 										// add a color contribution to the pixel
 										
@@ -275,8 +265,18 @@ public class Renderer {
 											RGBSpectrum totalColor = new RGBSpectrum(0,0,0);
 											if (mode.equals(RenderMode.STANDARD)) {
 												for (LightSource ls : lightsources) {
-													if (ls.isVisibleFrom(currentClosest, shapes)) {
-														RGBSpectrum colorContribution = getColorContribution(ray, currentClosest, ls);
+													if (ls instanceof AreaLight && sample_dimension != 1) {
+														Poplist<PointLightSource> ps = lightsourceSamples.get((AreaLight) ls);
+														if (ps == null || ps.size() == 0 ) {
+															ps = ((AreaLight) ls).sample(sample_dimension);
+															lightsourceSamples.put((AreaLight) ls, ps) ;
+														}
+														
+														PointLightSource p = ps.pop();
+														totalColor = totalColor.add(p.getColorContribution(currentClosest, shapes)).scale(sample_dimension);
+														
+													} else {
+														RGBSpectrum colorContribution = ls.getColorContribution(currentClosest, shapes);
 														totalColor = totalColor.add(colorContribution);
 													}
 												}
@@ -286,7 +286,7 @@ public class Renderer {
 											} 
 										}
 										if (mode.equals(RenderMode.ACCELERATION)) {
-											buffer.getPixel(x, y).add(new RGBSpectrum(0, 0, nb));
+											buffer.getPixel(x, y).add(new RGBSpectrum(0, 0, nb_of_calculated_intersections));
 										}
 									}
 								}
@@ -320,28 +320,7 @@ public class Renderer {
 					return new RGBSpectrum(0.5 + normal.x, 0.5 + normal.y, 0.5 + normal.z).scale(255.0);
 				}
 
-				private RGBSpectrum getColorContribution(Ray ray, Intersection currentClosest, LightSource ls) {
-					if (ls instanceof AmbientLight) {
-						return ls.getIntensity(0.0).scale(1/255.0).multiply(currentClosest.getColor());
-					}
-					Point p = currentClosest.getCoördinate();
-					Vector omegaO = ray.direction.scale(-1);
-					Vector omegaI = ls.getPosition().subtract(p);
-					Vector normal = currentClosest.getNormal();
-					if (normal.length() * omegaI.length() == 0) {
-						return new RGBSpectrum(0,0,0);
-					}
-					double cosTheta = normal.dot(omegaI)/(normal.length() * omegaI.length());
-					if (cosTheta < 0 && currentClosest.getShape().isTwoSided()) {
-						cosTheta = Math.abs(cosTheta);
-					}
-					RGBSpectrum power = ls.getIntensity(omegaI.length());
-					double brdf = math.BRDF.evaluate(omegaI, omegaO);
-					double red = power.red * brdf * cosTheta * currentClosest.getColor().red;
-					double green = power.green * brdf * cosTheta * currentClosest.getColor().green;
-					double blue = power.blue * brdf * cosTheta * currentClosest.getColor().blue;
-					return new RGBSpectrum(red, green, blue);
-				}
+				
 			};
 			
 			service.submit(thread);
@@ -382,14 +361,41 @@ public class Renderer {
 			nb += 1;
 			if (i != null) {
 				if (i.getShape() instanceof BV) {
-					List<BV> children = new ArrayList<>();
-					children.add((BV) i.getShape());
+					List<Pair<BV, Intersection>> children = new ArrayList<>();
+					children.add(new Pair<>((BV) i.getShape(), i));
 					while (! children.isEmpty()) {
-						BV bv = children.get(0);
-						nb += 1;
-						Intersection bv_int = bv.getIntersection(ray);
-						if (bv_int != null && (currentClosest == null || bv_int.getDistance() < currentClosest.getDistance())) {
-							children.addAll(bv.getChildren());
+						Pair<BV, Intersection> pair = children.get(0);
+						BV bv = pair.getFirst();
+						Intersection bv_int = pair.getSecond();
+						
+						if (bv_int != null && (currentClosest == null || bv_int.getDistance() <= currentClosest.getDistance())) {
+							
+							if (bv.getChildren().size() != 0) {
+								BV child1 = bv.getChildren().get(0);
+								BV child2 = bv.getChildren().get(1);
+								nb += 2;
+								Intersection int1 = child1.getIntersection(ray);
+								Intersection int2 = child2.getIntersection(ray);
+								
+								if (int1 == null) {
+									if (int2 != null) {
+										
+										children.add(1,new Pair<>(child2, int2));
+										
+									}
+								} else if (int2 == null) {
+									children.add(1,new Pair<>(child1, int1));
+								} else {
+									if (int1.getDistance() < int2.getDistance()) {
+										children.add(1,new Pair<>(child1, int1));
+										children.add(2,new Pair<>(child2, int2));
+									} else {
+										children.add(1,new Pair<>(child2, int2));
+										children.add(2,new Pair<>(child1, int1));
+									}
+								}
+							} 
+							
 							for (Shape s : bv.getShapes()) {
 								nb += 1;
 								Intersection currentInt = s.getIntersection(ray);
@@ -400,8 +406,7 @@ public class Renderer {
 								}
 							}
 						}
-						
-						children.remove(bv);
+						children.remove(0);
 					}
 				}
 				else {
@@ -414,6 +419,7 @@ public class Renderer {
 			}
 			
 		}
+		
 		return new Pair<Intersection, Integer>(currentClosest, nb);
 	}
 }

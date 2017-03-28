@@ -10,7 +10,10 @@ import java.util.StringTokenizer;
 import org.junit.Test;
 
 import acceleration.BV;
+import acceleration.BVH;
+import acceleration.Pair;
 import film.RGBSpectrum;
+import light.AreaLight;
 import light.PointLightSource;
 import main.Renderer;
 import math.Point;
@@ -192,6 +195,27 @@ public class Tests {
 		assertAboutEquals(box.getIntersection(ray).getCoördinate(), new Point(0,0,-1));
 		Intersection i = Renderer.getClosestIntersection(ray, shapes).getFirst();
 		assertAboutEquals(i.getCoördinate(), new Point(0,0,-1));
+	}
+	
+	@Test
+	public void testDepthFirst() {
+		List<Shape> shapes = new ArrayList<>();
+		for (int i = 0; i < 64 ; i++) {
+			shapes.add(new Sphere(Transformation.translate(0,0,-2*i)));
+		}
+		List<Shape> shapes_new = BVH.createBVH(shapes);
+		int depth = 1;
+		BV bv = (BV) shapes_new.get(0);
+		while (!bv.getChildren().isEmpty()) {
+			System.out.println("BV has " + bv.getShapes().size() + "shapes and " + bv.getChildren().size() + " children");
+			bv = bv.getChildren().get(1);
+			depth += 1;
+		}
+		System.out.println("BV has " + bv.getShapes().size() + "shapes and " + bv.getChildren().size() + " children");
+		System.out.println("depth = " + depth);
+		Ray ray = new Ray(new Point(0,0, 4), new Vector(0,0,-1));
+		Pair<Intersection, Integer> intersect = Renderer.getClosestIntersection(ray, shapes_new);
+		assertEquals(intersect.getSecond().intValue(), 15);
 	}
 	public void assertAboutEquals(Point point1, Point point2) {
 		try {

@@ -48,7 +48,11 @@ public class PolygonMesh implements Shape {
 			try {
 				reader = new BufferedReader(new FileReader("Project/src/shape/meshes/" + filename));
 			} catch (FileNotFoundException e2) {
-				System.out.println("could not find file: " + filename);
+				try {
+					reader = new BufferedReader(new FileReader(filename));
+				} catch (FileNotFoundException e3) {
+					System.out.println("could not find file: " + filename);
+				}
 			}
 			
 		}
@@ -163,7 +167,7 @@ public class PolygonMesh implements Shape {
 	@SuppressWarnings("unchecked")
 	@Override
 	public BV createNewBV() {
-		return BVH.buildBV((List<Shape>)(List<?>) triangles);
+		return BVH.buildBVPolygonMesh((List<Shape>)(List<?>) triangles);
 	}
 
 }
