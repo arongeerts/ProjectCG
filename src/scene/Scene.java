@@ -96,7 +96,7 @@ public class Scene {
 		s.add(table);
 		s.add(floor);
 		s.add(wallBehind);
-		//ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
+		ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
 		ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,0,0), new Vector(2,0,0), new Vector(0,2,0)));
 
 		//ls.add(new PointLightSource(new Point(-5,5,-3), new RGBSpectrum(255,0,0)));

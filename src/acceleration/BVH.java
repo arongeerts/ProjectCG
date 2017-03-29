@@ -122,7 +122,7 @@ public class BVH {
 				second.expand(shape.createNewBV());
 			}
 		}
-		currentSplit = (currentSplit + 1) % 2;
+		currentSplit = (currentSplit + 1) % 3;
 		superbv.clearShapes();
 		return new Pair<BV, BV>(first, second);
 	}
