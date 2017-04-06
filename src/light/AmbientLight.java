@@ -4,7 +4,7 @@ import java.util.List;
 
 import film.RGBSpectrum;
 import shape.Intersection;
-import shape.Shape;
+import shape.ShapeInstance;
 
 public class AmbientLight extends LightSource{
 
@@ -22,7 +22,7 @@ public class AmbientLight extends LightSource{
 
 	
 	@Override
-	public RGBSpectrum getColorContribution(Intersection currentClosest, List<Shape> shapes) {
+	public RGBSpectrum getColorContribution(Intersection currentClosest, List<ShapeInstance> shapes) {
 		return getIntensity(0.0);
 	}
 

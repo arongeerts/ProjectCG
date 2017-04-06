@@ -8,6 +8,9 @@ import math.Point;
 import math.Transformation;
 import shape.PolygonMesh;
 import shape.Shape;
+import shape.ShapeInstance;
+import texture.TransparentTexture;
+import util.Pair;
 
 public class BVH {
 
@@ -18,21 +21,25 @@ public class BVH {
 	
 	private static int nb_shapes = 8;
 	
-	public static List<Shape> createBVH(List<Shape> shapes) {
-		List<Shape> result = new ArrayList<>();
-		for (Shape shape: shapes) {
-			if (shape instanceof PolygonMesh) {
-				result.add(shape.createNewBV());
+	//TODO: create a BVH for a polygonmesh. store this bvh as an object
+	// of the new class PolygonMeshBVH (subclass of BV, maybe)
+	// This BVH can have a wrapper with the transformation + texture
+	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {
+		List<ShapeInstance> result = new ArrayList<>();
+		for (ShapeInstance wrapper: wrappers) {
+			if (wrapper.shape instanceof PolygonMesh) {
+				BV bv = wrapper.shape.createNewBV(wrapper.transformation);
+				result.add(new ShapeInstance(bv, Transformation.IDENTITY, wrapper.texture));
 			} else {
-				result.add(shape);
+				result.add(new ShapeInstance(wrapper.shape, Transformation.IDENTITY, wrapper.texture));
 			}
 			
 		}
 		if (result.size() > nb_shapes) {
 			@SuppressWarnings("unchecked")
 			BV superbv = buildSuper((List<BV>)(List<?>)result);
-			List<Shape> end_result = new ArrayList<>();
-			end_result.add(superbv);
+			List<ShapeInstance> end_result = new ArrayList<>();
+			end_result.add(new ShapeInstance(superbv, Transformation.IDENTITY, new TransparentTexture()));
 			return end_result;
 		}
 		return result;
@@ -61,8 +68,6 @@ public class BVH {
 		Point leftBottom = new Point(x, y, z);
 		Point rightTop = new Point(x2, y2, z2);
 		BV parent = new BV(leftBottom, rightTop);
-		parent.transformation = Transformation.translate(leftBottom.x, leftBottom.y, leftBottom.z)
-				.append(Transformation.scale(rightTop.subtract(leftBottom).x, rightTop.subtract(leftBottom).y, rightTop.subtract(leftBottom).z));
 		mergeQueue.remove(0);
 		mergeQueue.remove(0);
 		parent.addChild(first);
@@ -75,7 +80,7 @@ public class BVH {
 		Point leftBottom = new Point(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
 		BV superbv = new BV(leftBottom, rightTop);
 		for (Shape shape : shapes) {
-			BV newBv = shape.createNewBV();
+			BV newBv = shape.createNewBV(null);
 			superbv.expand(newBv);
 		}
 		List<BV> toSplit = new ArrayList<>();
@@ -117,9 +122,9 @@ public class BVH {
 		BV second = new BV(leftbottom, righttop);
 		for (Shape shape : superbv.getShapes()) {
 			if ((currentSplit == SPLIT_X && shape.getCentric().x < median) || (currentSplit == SPLIT_Y && shape.getCentric().y < median) || (currentSplit == SPLIT_Z && shape.getCentric().z < median)) {
-				first.expand(shape.createNewBV());
+				first.expand(shape.createNewBV(null));
 			} else {
-				second.expand(shape.createNewBV());
+				second.expand(shape.createNewBV(null));
 			}
 		}
 		currentSplit = (currentSplit + 1) % 3;

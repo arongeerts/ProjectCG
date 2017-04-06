@@ -4,24 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import acceleration.BV;
-import acceleration.Pair;
 import film.RGBSpectrum;
 import math.Point;
 import math.Ray;
 import math.Vector;
 import shape.Intersection;
 import shape.Shape;
+import shape.ShapeInstance;
+import util.Pair;
 
 public abstract class LightSource {
 
-	public abstract RGBSpectrum getColorContribution(Intersection currentClosest, List<Shape> shapes);
+	public abstract RGBSpectrum getColorContribution(Intersection currentClosest, List<ShapeInstance> shapes);
 	
-	public static boolean isPointVisibleFrom(Point my_pos, Point target, List<Shape> shapes) {
+	public static boolean isPointVisibleFrom(Point my_pos, Point target, List<ShapeInstance> shapes) {
 		Vector direction = my_pos.subtract(target);
 		double selfIntersectionBias = Math.pow(10, -8);
 		target.add(direction.scale(selfIntersectionBias));
 		Ray shadowRay = new Ray(target, direction);
-		for (Shape shape : shapes) {
+		for (ShapeInstance shape : shapes) {
 			Intersection i = shape.getIntersection(shadowRay);
 			if (i != null) {
 				if (i.getShape() instanceof BV) {

@@ -1,6 +1,7 @@
 package texture;
 
 import film.RGBSpectrum;
+import util.Pair;
 
 public class TransparentTexture implements Texture {
 
@@ -9,4 +10,8 @@ public class TransparentTexture implements Texture {
 		return new RGBSpectrum(0,0,0);
 	}
 
+	@Override
+	public RGBSpectrum evaluate(Pair<Double, Double> uv) {
+		return this.evaluate(uv.getFirst(), uv.getSecond());
+	}
 }

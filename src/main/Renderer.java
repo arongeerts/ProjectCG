@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 
 import acceleration.BV;
-import acceleration.Pair;
 import camera.PerspectiveCamera;
 import film.FrameBuffer;
 import film.RGBSpectrum;
@@ -33,9 +32,13 @@ import math.Transformation;
 import math.Vector;
 import sampling.Sample;
 import scene.Scene;
+import scene.SceneBuilder;
 import shape.Intersection;
 import shape.PolygonMesh;
 import shape.Shape;
+import shape.ShapeInstance;
+import texture.UniformColorTexture;
+import util.Pair;
 import util.Poplist;
 
 /**
@@ -54,8 +57,8 @@ public class Renderer {
 	 * @throws InvocationTargetException
 	 */
 	public static void main(String[] arguments) {
-		int width = 640;
-		int height = 640;
+		int width = 140;
+		int height = 140;
 		double sensitivity = 0.004;
 		double gamma = 2.2;
 		boolean gui = true;
@@ -64,7 +67,7 @@ public class Renderer {
 		Point destination = new Point(0,0,-1);
 		Vector lookup = new Vector(0, 1, 0);
 		double fov = 60;
-		int sample_dim = 5;
+		int sample_dim = 1;
 		String filename = "output.png";
 		RenderMode mode_if_no_input = RenderMode.STANDARD;
 		
@@ -111,9 +114,11 @@ public class Renderer {
 					} else if (flag.equals("-samples")) {
 						sample_dim = Integer.parseInt(arguments[++i]);
 					} else if (flag.equals("-input")) {
-						PolygonMesh p = new PolygonMesh(arguments[++i], Transformation.IDENTITY);
-						List<Shape> shapes = new ArrayList<>();
-						shapes.add(p);
+						PolygonMesh p = new PolygonMesh(arguments[++i]);
+						ShapeInstance inst = new ShapeInstance(p,
+								Transformation.IDENTITY, new UniformColorTexture(new RGBSpectrum(255,255,255)));
+						List<ShapeInstance> shapes = new ArrayList<>();
+						shapes.add(inst);
 						List<LightSource> lightsources = new ArrayList<>();
 						lightsources.add(new PointLightSource(new Point(0,0,2), new RGBSpectrum(255,255,225)));
 						lightsources.add(new AmbientLight(new RGBSpectrum(20,20,20)));
@@ -207,11 +212,11 @@ public class Renderer {
 		 *********************************************************************/
 		if (scene == null) {
 			double start = System.currentTimeMillis();
-			scene = Scene.getExampleScene2();
+			scene = SceneBuilder.getExampleScene4();
 			System.out.println("initialised the scene in: " + (System.currentTimeMillis() - start) +" ms");;
 		}
 		final int sample_dimension = sample_dim;
-		final List<Shape> shapes = scene.getShapes();
+		final List<ShapeInstance> shapes = scene.getShapes();
 		final List<LightSource> lightsources = scene.getLightsources();
 		final RenderMode mode = mode_if_no_input;
 		/**********************************************************************
@@ -353,10 +358,10 @@ public class Renderer {
 		}
 	}
 	
-	public static Pair<Intersection, Integer> getClosestIntersection(Ray ray, List<Shape> shapes) {
+	public static Pair<Intersection, Integer> getClosestIntersection(Ray ray, List<ShapeInstance> shapes) {
 		Intersection currentClosest = null;
 		int nb = 0;
-		for (Shape shape : shapes) {
+		for (ShapeInstance shape : shapes) {
 			Intersection i = shape.getIntersection(ray);
 			nb += 1;
 			if (i != null) {

@@ -11,18 +11,15 @@ import java.util.StringTokenizer;
 
 import acceleration.BV;
 import acceleration.BVH;
-import film.RGBSpectrum;
 import math.Point;
 import math.Ray;
 import math.Transformation;
 import math.Vector;
-import texture.Texture;
-import texture.UniformColorTexture;
+import util.Pair;
 
 public class PolygonMesh implements Shape {
 	
-	private Transformation transformation;
-	private Texture texture;
+
 	public List<Point> vertices = new ArrayList<>();
 	public List<Vector> normals = new ArrayList<>();
 	public List<Double> us = new ArrayList<>();
@@ -30,13 +27,7 @@ public class PolygonMesh implements Shape {
 	public List<MeshTriangle> triangles = new ArrayList<>();
 	
 
-	public PolygonMesh(String filename, Transformation transformation) {
-		this(filename, transformation, new UniformColorTexture(new RGBSpectrum(255,255,255)));
-	}
-	
-	public PolygonMesh(String filename, Transformation transformation, Texture texture) {
-		this.texture = texture;
-		this.transformation = transformation;
+	public PolygonMesh(String filename) {
 		this.parseObjFile(filename);		
 	}
 
@@ -90,10 +81,10 @@ public class PolygonMesh implements Shape {
 			}
 			if (tokens.get(0).equals("v")) {
 				//new vertex
-				vertices.add(transformation.transform(new Point(Double.parseDouble(tokens.get(1)), Double.parseDouble(tokens.get(2)), Double.parseDouble(tokens.get(3)))));
+				vertices.add(new Point(Double.parseDouble(tokens.get(1)), Double.parseDouble(tokens.get(2)), Double.parseDouble(tokens.get(3))));
 			}
 			else if (tokens.get(0).equals("vn")) {
-				normals.add(transformation.transform(new Vector(Double.parseDouble(tokens.get(1)), Double.parseDouble(tokens.get(2)), Double.parseDouble(tokens.get(3)))));
+				normals.add(new Vector(Double.parseDouble(tokens.get(1)), Double.parseDouble(tokens.get(2)), Double.parseDouble(tokens.get(3))));
 			}
 			else if (tokens.get(0).equals("vt")) {
 				us.add(Double.parseDouble(tokens.get(1)));
@@ -119,7 +110,7 @@ public class PolygonMesh implements Shape {
 				Vector na = normals.get(Integer.parseInt(st1.nextToken())-1).normalize();
 				Vector nb = normals.get(Integer.parseInt(st2.nextToken())-1).normalize();
 				Vector nc = normals.get(Integer.parseInt(st3.nextToken())-1).normalize();
-				triangles.add(new MeshTriangle(a, b, c, na, nb, nc, texture, textureCoordinates));
+				triangles.add(new MeshTriangle(a, b, c, na, nb, nc, textureCoordinates));
 				
 			}
 		}
@@ -144,10 +135,7 @@ public class PolygonMesh implements Shape {
 		return closest;
 	}
 
-	@Override
-	public RGBSpectrum getColor(Point p) {
-		return null;
-	}
+
 
 	@Override
 	public Vector getNormal(Point p) {
@@ -166,8 +154,13 @@ public class PolygonMesh implements Shape {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public BV createNewBV() {
+	public BV createNewBV(Transformation transformation) {
 		return BVH.buildBVPolygonMesh((List<Shape>)(List<?>) triangles);
+	}
+
+	@Override
+	public Pair<Double, Double> getUV(Point p) {
+		return null;
 	}
 
 }

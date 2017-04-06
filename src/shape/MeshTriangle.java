@@ -6,9 +6,11 @@ import acceleration.BV;
 import film.RGBSpectrum;
 import math.Point;
 import math.Ray;
+import math.Transformation;
 import math.Vector;
 import texture.Texture;
 import texture.UniformColorTexture;
+import util.Pair;
 
 public class MeshTriangle implements Shape {
 
@@ -19,7 +21,6 @@ public class MeshTriangle implements Shape {
 	private Vector normalA;
 	private Vector normalB;
 	private Vector normalC;
-	private Texture texture;
 	private List<Double> textureCoordinates;
 
 	public MeshTriangle(Point a, Point b, Point c, Vector normalA, Vector normalB, Vector normalC, Texture texture, List<Double> textureCoordinates) {
@@ -29,7 +30,6 @@ public class MeshTriangle implements Shape {
 		this.normalA = normalA;
 		this.normalB = normalB;
 		this.normalC = normalC;
-		this.texture = texture;
 		this.textureCoordinates = textureCoordinates; 
 	}
 	
@@ -63,19 +63,19 @@ public class MeshTriangle implements Shape {
         I = I.add(ray.direction.scale(r));
         Vector bc = getBarycentricCoördinates(I);
         if (bc.x >= 0 && bc.x <= 1 && bc.y >= 0 && bc.y <= 1 && bc.z >= 0 && bc.z <= 1) {
-        	return new Intersection(I, this, ray, getNormal(I), getColor(I));
+        	return new Intersection(I, this, ray, getNormal(I));
         }
         return null;
 	}
 
 	@Override
-	public RGBSpectrum getColor(Point p) {
+	public Pair<Double, Double> getUV(Point p) {
 		Vector bc = getBarycentricCoördinates(p);
 		double u = bc.x * textureCoordinates.get(0) + bc.y * textureCoordinates.get(2)
 			+ bc.z * textureCoordinates.get(4);
 		double v = bc.x * textureCoordinates.get(1) + bc.y * textureCoordinates.get(3)
 		+ bc.z * textureCoordinates.get(5);
-		return texture.evaluate(u,1-v);
+		return new Pair<Double, Double>(u,1-v);
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class MeshTriangle implements Shape {
 		return a.scale(1.0/3).add(b.scale(1.0/3).toVector()).add(c.scale(1.0/3).toVector());
 	}
 	
-	public BV createNewBV() {
+	public BV createNewBV(Transformation transformation) {
 		double bias = Math.pow(10, -5);
 		double minx = Math.min(Math.min(a.x - bias, b.x - bias), c.x - bias);
 		double miny = Math.min(Math.min(a.y - bias, b.y - bias), c.y - bias);

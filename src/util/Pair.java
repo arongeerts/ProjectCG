@@ -1,4 +1,4 @@
-package acceleration;
+package util;
 
 public class Pair<U, V> {
 

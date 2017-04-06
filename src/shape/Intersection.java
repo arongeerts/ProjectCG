@@ -12,20 +12,19 @@ public class Intersection {
 	private Ray ray;
 	private Vector normal;
 	public RGBSpectrum color;
-	private int depth = 1;
 
-	public Intersection(Point coördinate, Shape shape, Ray ray, Vector normal, RGBSpectrum color, int depth) {
+	public Intersection(Point coördinate, Shape shape, Ray ray, Vector normal) {
+		this(coördinate, shape, ray, normal, null);
+	}
+	
+	public Intersection(Point coördinate, Shape shape, Ray ray, Vector normal, RGBSpectrum color) {
 		this.coördinate = coördinate;
 		this.shape = shape;
 		this.ray = ray;
 		this.normal = normal;
 		this.color = color;
-		this.depth = depth;
 	}
 
-	public Intersection(Point coördinate, Shape shape, Ray ray, Vector normal, RGBSpectrum color) {
-		this(coördinate, shape, ray, normal, color, 1);
-	}
 	public Point getCoördinate() {
 		return coördinate;
 	}
@@ -54,15 +53,8 @@ public class Intersection {
 		return color;
 	}
 	
-	public int getDepth() {
-		return depth;
-	}
-	
-	public void setDepth(int depth) {
-		this.depth = depth;
-	}
-	public void incrementDepth() {
-		depth += 1;
+	public void setColor(RGBSpectrum color) {
+		this.color = color;
 	}
 	
 	@Override

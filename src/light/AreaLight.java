@@ -7,7 +7,7 @@ import film.RGBSpectrum;
 import math.Point;
 import math.Vector;
 import shape.Intersection;
-import shape.Shape;
+import shape.ShapeInstance;
 import util.Poplist;
 
 public class AreaLight extends LightSource {
@@ -28,7 +28,7 @@ public class AreaLight extends LightSource {
 	}
 	
 	@Override
-	public RGBSpectrum getColorContribution(Intersection currentClosest, List<Shape> shapes) {
+	public RGBSpectrum getColorContribution(Intersection currentClosest, List<ShapeInstance> shapes) {
 		Poplist<PointLightSource> samples = sample(DEFAULT_SAMPLE_DIMENSION);
 		RGBSpectrum total = RGBSpectrum.BLACK;
 		for (PointLightSource sample : samples) {

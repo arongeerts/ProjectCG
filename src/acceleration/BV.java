@@ -5,11 +5,10 @@ import java.util.List;
 
 import math.Point;
 import math.Ray;
-import math.Transformation;
+import math.Vector;
 import shape.AxisAlignedBox;
 import shape.Intersection;
 import shape.Shape;
-import texture.TransparentTexture;
 
 public class BV extends AxisAlignedBox {
 
@@ -19,11 +18,8 @@ public class BV extends AxisAlignedBox {
 	private List<Shape> shapes = new ArrayList<>();
 	
 	public BV(Point leftBottom, Point rightTop) {
-		super(Transformation.translate(leftBottom.x, leftBottom.y, leftBottom.z)
-				.append(Transformation.scale(rightTop.subtract(leftBottom).x, rightTop.subtract(leftBottom).y, rightTop.subtract(leftBottom).z)));
 		this.leftBottom = leftBottom;
 		this.rightTop = rightTop;
-		this.texture = new TransparentTexture();
 	}
 	
 	public List<BV> getChildren() {
@@ -88,14 +84,54 @@ public class BV extends AxisAlignedBox {
 		double z2 = Math.max(rightTop.z, other.getRightTop().z);
 		this.leftBottom = new Point(x, y, z);
 		this.rightTop = new Point(x2, y2, z2);
-		this.transformation = Transformation.translate(leftBottom.x, leftBottom.y, leftBottom.z)
-				.append(Transformation.scale(rightTop.subtract(leftBottom).x, rightTop.subtract(leftBottom).y, rightTop.subtract(leftBottom).z));
 		this.addAllShapes(other.getShapes());
 	}
 	
 	@Override
 	public Intersection getIntersection(Ray ray) {
-		return super.getIntersection(ray);
+		if (ray == null) {
+			return null;
+		}
+		
+		Vector o = ray.origin.toVector();
+		Vector dir = ray.direction;
+		double tmin = 0;
+		double tmax = Double.MAX_VALUE;
+		
+		if (dir.x != 0.0) {
+			double tx1 = (leftBottom.x-o.x)/dir.x;
+			double tx2 = (rightTop.x-o.x)/dir.x;
+			
+			tmin = Math.min(tx1, tx2);
+			tmax = Math.max(tx1, tx2);
+		}
+		
+		if (dir.y != 0.0) {
+			double ty1 = (leftBottom.y-o.y)/dir.y;
+			double ty2 = (rightTop.y-o.y)/dir.y;
+		
+			tmin = Math.max(tmin, Math.min(ty1, ty2));
+			tmax = Math.min(tmax, Math.max(ty1, ty2));
+		}
+		if (dir.z != 0.0) {
+			double tz1 = (leftBottom.z-o.z)/dir.z;
+			double tz2 = (rightTop.z-o.z)/dir.z;
+			
+			tmin = Math.max(tmin, Math.min(tz1, tz2));
+			tmax = Math.min(tmax, Math.max(tz1, tz2));
+		}
+
+		if (tmin <= tmax && tmax > 0) {
+			Point intersectionPoint;
+			if (tmin > 0) {
+				intersectionPoint = ray.origin.add(ray.direction.scale(tmin));
+			} else {
+				intersectionPoint = ray.origin.add(ray.direction.scale(tmax));
+			}
+			return new Intersection(intersectionPoint, this, ray, getNormal(intersectionPoint));
+		}
+		
+		return null;
 	}
 	
 	/*public Intersection getIntersection(Ray ray) {

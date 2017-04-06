@@ -8,6 +8,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 import film.RGBSpectrum;
+import util.Pair;
 
 public class TextureMap implements Texture {
 
@@ -34,7 +35,7 @@ public class TextureMap implements Texture {
 		
 		else {
 			
-			int x = (int) (map.getWidth() * u);
+			int x = (int) Math.abs((map.getWidth() * u));
 			int y = (int) (map.getHeight() * v);
 			if (x == map.getWidth()) {
 				x -= 1;
@@ -42,7 +43,11 @@ public class TextureMap implements Texture {
 			if (y == map.getHeight()) {
 				y -= 1;
 			}
-			
+			/*System.out.println("----------");
+			System.out.println(x);
+			System.out.println(y);
+			System.out.println(map.getWidth());
+			System.out.println(map.getHeight());*/
 			Color color = new Color(map.getRGB(x, y));
 
 			int red = color.getRed();
@@ -50,6 +55,11 @@ public class TextureMap implements Texture {
 			int blue = color.getBlue();
 			return new RGBSpectrum(red, green, blue);
 		}
+	}
+	
+	@Override
+	public RGBSpectrum evaluate(Pair<Double, Double> uv) {
+		return this.evaluate(uv.getFirst(), uv.getSecond());
 	}
 
 }

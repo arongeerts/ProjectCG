@@ -1,5 +1,7 @@
 package math;
 
+import shape.Intersection;
+
 /**
  * A wrapper for transformation matrix which allows to apply transformation and
  * inverse transformation on three-dimensional objects.
@@ -121,6 +123,19 @@ public class Transformation {
 		return matrix.transform(vector);
 	}
 
+	public Intersection transform(Intersection i) {
+		Point p_t = transform(i.getCoördinate());
+		Vector n_t = transform(i.getNormal());
+		Ray ray_t = transform(i.getRay());
+		return new Intersection(p_t, i.getShape(), ray_t, n_t, i.getColor());
+	}
+	
+	public Intersection transformInverse(Intersection i) {
+		Point p_t = transformInverse(i.getCoördinate());
+		Vector n_t = transformInverse(i.getNormal());
+		Ray ray_t = transformInverse(i.getRay());
+		return new Intersection(p_t, i.getShape(), ray_t, n_t, i.getColor());
+	}
 	/**
 	 * Transforms the given vector with the inverse of this transformation.
 	 * 

@@ -1,10 +1,11 @@
 package shape;
 
 import acceleration.BV;
-import film.RGBSpectrum;
 import math.Point;
 import math.Ray;
+import math.Transformation;
 import math.Vector;
+import util.Pair;
 
 /**
  * Interface which should be implemented by all shapes.
@@ -23,13 +24,13 @@ public interface Shape {
 	 */
 	public Intersection getIntersection(Ray ray);
 	
-	public RGBSpectrum getColor(Point p);
-	
 	public Vector getNormal(Point p);
-
+	
 	public boolean isTwoSided();
 	
 	public Point getCentric();
 
-	public BV createNewBV();
+	public BV createNewBV(Transformation transformation);
+	
+	public Pair<Double, Double> getUV(Point p);
 }

@@ -1,13 +1,11 @@
 package shape;
 
 import acceleration.BV;
-import film.RGBSpectrum;
 import math.Point;
 import math.Ray;
 import math.Transformation;
 import math.Vector;
-import texture.Texture;
-import texture.UniformColorTexture;
+import util.Pair;
 
 /**
  * Represents a three-dimensional sphere with radius one, centered at the
@@ -17,15 +15,8 @@ import texture.UniformColorTexture;
  * @version 0.3
  */
 public class Sphere implements Shape {
-	/**
-	 * The transformation which is applied to the sphere to place it in the
-	 * scene.
-	 */
-	public final Transformation transformation;
 
-	public RGBSpectrum color;
 
-	private Texture texture;
 	/**
 	 * Creates a new unit sphere at the origin, transformed by the given
 	 * transformation.
@@ -35,16 +26,8 @@ public class Sphere implements Shape {
 	 * @throws NullPointerException
 	 *             when the transformation is null.
 	 */
-	public Sphere(Transformation transformation) throws NullPointerException {
-		this(transformation, new UniformColorTexture(new RGBSpectrum(255,255,255)));
-	}
+	public Sphere() {}
 
-	public Sphere(Transformation transformation, Texture texture) throws NullPointerException {
-		if (transformation == null)
-			throw new NullPointerException("the given transformation is null!");
-		this.transformation = transformation;
-		this.texture = texture;
-	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -54,12 +37,11 @@ public class Sphere implements Shape {
 	public Intersection getIntersection(Ray ray) {
 		if (ray == null)
 			return null;
-		Ray transformed = transformation.transformInverse(ray);
 
-		Vector o = transformed.origin.toVector();
+		Vector o = ray.origin.toVector();
 
-		double a = transformed.direction.lengthSquared();
-		double b = 2.0 * (transformed.direction.dot(o));
+		double a = ray.direction.lengthSquared();
+		double b = 2.0 * (ray.direction.dot(o));
 		double c = o.dot(o) - 1.0;
 
 		double d = b * b - 4.0 * a * c;
@@ -85,20 +67,17 @@ public class Sphere implements Shape {
 			closest = Math.min(t0, t1);
 		}
 		Point intersectionPoint = ray.origin.add(ray.direction.scale(closest));
-		return new Intersection(intersectionPoint, this, ray, getNormal(intersectionPoint), getColor(intersectionPoint));
+		return new Intersection(intersectionPoint, this, ray, getNormal(intersectionPoint));
 	}
 
 	@Override
-	public RGBSpectrum getColor(Point p) {
-		Point p_t = transformation.transformInverse(p);
-		return texture.evaluate((Math.atan(p_t.x/p_t.z) + Math.PI/2)/(Math.PI), Math.acos(p_t.y) / Math.PI);
+	public Pair<Double, Double> getUV(Point p) {
+		return new Pair<Double, Double>((Math.atan(p.x/p.z) + Math.PI/2)/(Math.PI), Math.acos(p.y) / Math.PI);
 	}
 
 	@Override
 	public Vector getNormal(Point p) {
-		Point center = transformation.transform(new Point(0,0,0));
-		Vector normal = p.subtract(center);
-		return normal.divide(normal.length());
+		return p.toVector().normalize();
 	}
 
 	@Override
@@ -108,11 +87,11 @@ public class Sphere implements Shape {
 	
 	@Override
 	public Point getCentric() {
-		return transformation.transform(new Point(0,0,0));
+		return new Point(0,0,0);
 	}
 
 	@Override
-	public BV createNewBV() {
+	public BV createNewBV(Transformation transformation) {
 		BV bv = new BV(transformation.transform(new Point(-1,-1,-1))
 				, transformation.transform(new Point(1,1,1)));
 		bv.addShape(this);

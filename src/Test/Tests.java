@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import acceleration.BV;
 import acceleration.BVH;
-import acceleration.Pair;
 import film.RGBSpectrum;
 import light.AreaLight;
 import light.PointLightSource;
@@ -28,10 +27,11 @@ import shape.PolygonMesh;
 import shape.Shape;
 import shape.Sphere;
 import texture.UniformColorTexture;
+import util.Pair;
 
 public class Tests {
 
-	@Test
+	/*@Test
 	public void testBoxIntersection() {
 		Point origin = new Point(0.5, 0.5, -1);
 		Vector direction = new Vector(0,0,1);
@@ -58,21 +58,6 @@ public class Tests {
 		assertTrue(ls.isVisibleFrom(i, shapes));
 	}
 	
-	@Test 
-	public void testCylinderNormal() {
-		Transformation t = Transformation.rotateX(20).append(Transformation.translate(-0.5, -0.5, -0.5)).append(Transformation.scale(4, 4, 4));
-		Cylinder c = new Cylinder(t);
-		Point p = t.transform(new Point(1, 0.5, 0));
-		assertEquals(c.getNormal(p), t.transform(new Vector(1,0,0)));
-	}
-	
-	@Test
-	public void testCylinderNormalPlane() {
-		Transformation t = Transformation.rotateX(20).append(Transformation.translate(-0.5, -0.5, -0.5)).append(Transformation.scale(4, 4, 4));
-		Cylinder c = new Cylinder(t);
-		Point p = t.transform(new Point(0.2, 1, 0.2));
-		assertEquals(c.getNormal(p), t.transform(new Vector(0,1,0)));
-	}
 	
 	@Test
 	public void testMeshTriangleIntersection() {
@@ -230,6 +215,6 @@ public class Tests {
 	public void assertAboutEquals(Vector v1, Vector v2) {
 		assertTrue(v1.subtract(v2).length() < Math.pow(10, -5));
 	}
-	
+	*/
 }
 

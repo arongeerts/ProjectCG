@@ -9,6 +9,7 @@ import math.Ray;
 import math.Vector;
 import shape.Intersection;
 import shape.Shape;
+import shape.ShapeInstance;
 
 public class PointLightSource extends LightSource {
 
@@ -32,7 +33,7 @@ public class PointLightSource extends LightSource {
 	}
 	
 	@Override
-	public RGBSpectrum getColorContribution(Intersection currentClosest, List<Shape> shapes) {
+	public RGBSpectrum getColorContribution(Intersection currentClosest, List<ShapeInstance> shapes) {
 		if (! isVisibleFrom(currentClosest, shapes)) {
 			return new RGBSpectrum(0,0,0);
 		}
@@ -57,7 +58,7 @@ public class PointLightSource extends LightSource {
 		
 	}
 	
-	public boolean isVisibleFrom(Intersection i, List<Shape> shapes) {
+	public boolean isVisibleFrom(Intersection i, List<ShapeInstance> shapes) {
 		Point p = i.getCoördinate();
 		return isPointVisibleFrom(position, p, shapes);
 	}

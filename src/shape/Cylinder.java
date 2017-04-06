@@ -8,26 +8,17 @@ import math.Transformation;
 import math.Vector;
 import texture.Texture;
 import texture.UniformColorTexture;
+import util.Pair;
 
 public class Cylinder implements Shape {
 
-	private Transformation transformation;
-	private Texture texture;
 	
-	public Cylinder(Transformation transformation, Texture texture) {
-		this.transformation = transformation;
-		this.texture = texture;
-	}
-	
-	public Cylinder(Transformation transformation) {
-		this(transformation, new UniformColorTexture(new RGBSpectrum(255,255,255)));
-	}
+	public Cylinder(){}
 	
 	@Override
 	public Intersection getIntersection(Ray ray) {
-		Ray transformed = transformation.transformInverse(ray);
-		Vector o = transformed.origin.toVector();
-		Vector dir = transformed.direction;
+		Vector o = ray.origin.toVector();
+		Vector dir = ray.direction;
 		Vector va = new Vector(0,1,0);
 		double a = dir.subtract(va.scale(dir.dot(va))).lengthSquared();
 		double b = 2.0*(dir.subtract(va.scale(dir.dot(va)))).dot(o.subtract(va.scale(o.dot(va))));
@@ -54,8 +45,8 @@ public class Cylinder implements Shape {
 			tSolmin = Math.min(tSol1, tSol2);
 		}
 		double t1 = Double.MAX_VALUE;
-		Point IPTransformed = transformed.origin.add(transformed.direction.scale(tSolmin));
-		if (IPTransformed.y > 0 && IPTransformed.y < 1.0) {
+		Point p = o.toPoint().add(dir.scale(tSolmin));
+		if (p.y > 0 && p.y < 1.0) {
 			t1 = tSolmin;
 		}
 
@@ -73,7 +64,7 @@ public class Cylinder implements Shape {
 			tymin = Math.min(ty1, ty2);
 		}
 		
-		Point IPPlaneTransformed = transformed.origin.add(transformed.direction.scale(tymin));
+		Point IPPlaneTransformed = o.toPoint().add(dir.scale(tymin));
 		double t2 = Double.MAX_VALUE;
 		if (Math.pow(IPPlaneTransformed.x, 2) + Math.pow(IPPlaneTransformed.z, 2) < 1.0) {
 			t2 = tymin;
@@ -84,27 +75,20 @@ public class Cylinder implements Shape {
 		}
 		Point intersectionPoint = ray.origin.add(ray.direction.scale(closest));
 		
-		return new Intersection(intersectionPoint, this, ray, getNormal(intersectionPoint), getColor(intersectionPoint));
+		return new Intersection(intersectionPoint, this, ray, getNormal(intersectionPoint));
 		
 	}
 
 	@Override
-	public RGBSpectrum getColor(Point p) {
-		Point p_t = transformation.transformInverse(p);
-		return texture.evaluate((Math.atan(p_t.x/p_t.z)+Math.PI/2)/Math.PI, 1-p_t.y);
-	}
-
-	@Override
 	public Vector getNormal(Point p) {
-		Point p_t = transformation.transformInverse(p);
 		double bias = Math.pow(10,  -10);
-		if (p_t.y < bias && p_t.y > (-bias)) {
-			return transformation.transform(new Vector(0,-1,0));
+		if (p.y < bias && p.y > (-bias)) {
+			return new Vector(0,-1,0);
 		}
-		if (p_t.y < 1.0+bias && p_t.y > (1.0-bias)) {
-			return transformation.transform(new Vector(0,1,0));
+		if (p.y < 1.0+bias && p.y > (1.0-bias)) {
+			return new Vector(0,1,0);
 		}
-		return transformation.transform(new Vector(p_t.x, 0, p_t.z));
+		return new Vector(p.x, 0, p.z);
 	}
 
 	@Override
@@ -114,11 +98,16 @@ public class Cylinder implements Shape {
 
 	@Override
 	public Point getCentric() {
-		return transformation.transform(new Point(0,0.5,0));
+		return new Point(0,0.5,0);
 	}
 
 	@Override
-	public BV createNewBV() {
+	public Pair<Double, Double> getUV(Point p) {
+		return new Pair<Double, Double>((Math.atan(p.x/p.z)+Math.PI/2)/Math.PI, 1-p.y);
+	}
+	
+	@Override
+	public BV createNewBV(Transformation transformation) {
 		Point A = transformation.transform(new Point(0,0,0));
 		Point B = transformation.transform(new Point(0,1,0));
 		double radius = transformation.transform(new Vector(1,0,0)).length();
