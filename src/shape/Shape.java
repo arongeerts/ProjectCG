@@ -5,6 +5,7 @@ import math.Point;
 import math.Ray;
 import math.Transformation;
 import math.Vector;
+import texture.Texture;
 import util.Pair;
 
 /**
@@ -30,7 +31,7 @@ public interface Shape {
 	
 	public Point getCentric();
 
-	public BV createNewBV(Transformation transformation);
+	public BV createNewBV();
 	
 	public Pair<Double, Double> getUV(Point p);
 }

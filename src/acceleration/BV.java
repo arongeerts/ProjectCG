@@ -13,15 +13,24 @@ import shape.Shape;
 public class BV extends AxisAlignedBox {
 
 	private List<BV> children = new ArrayList<>();
-	Point leftBottom;
-	Point rightTop;
 	private List<Shape> shapes = new ArrayList<>();
+	Vector x;
+	Vector y;
+	Vector z;
+	Point leftBottom;
 	
-	public BV(Point leftBottom, Point rightTop) {
+	public BV(Point leftBottom, Vector x, Vector y, Vector z) {
 		this.leftBottom = leftBottom;
-		this.rightTop = rightTop;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
-	
+
+	public BV(Point leftBottom, Point rightTop) {
+		this(leftBottom, new Vector(rightTop.subtract(leftBottom).x,0,0),
+				new Vector(0,rightTop.subtract(leftBottom).y, 0), new Vector(0,0,rightTop.subtract(leftBottom).z));
+	}
+
 	public List<BV> getChildren() {
 		return children;
 	}
@@ -67,7 +76,7 @@ public class BV extends AxisAlignedBox {
 	}
 	
 	public Point getRightTop() {
-		return rightTop;
+		return leftBottom.add(x).add(y).add(z);
 	}
 	
 	@Override 
@@ -79,11 +88,13 @@ public class BV extends AxisAlignedBox {
 		double x = Math.min(leftBottom.x, other.getLeftBottom().x);
 		double y = Math.min(leftBottom.y, other.getLeftBottom().y);
 		double z = Math.min(leftBottom.z, other.getLeftBottom().z);
-		double x2 = Math.max(rightTop.x, other.getRightTop().x);
-		double y2 = Math.max(rightTop.y, other.getRightTop().y);
-		double z2 = Math.max(rightTop.z, other.getRightTop().z);
+		double x2 = Math.max(getRightTop().x, other.getRightTop().x);
+		double y2 = Math.max(getRightTop().y, other.getRightTop().y);
+		double z2 = Math.max(getRightTop().z, other.getRightTop().z);
 		this.leftBottom = new Point(x, y, z);
-		this.rightTop = new Point(x2, y2, z2);
+		this.x = new Vector(x2-x, 0, 0);
+		this.y = new Vector(0, y2-y, 0);
+		this.z = new Vector(0, 0, z2-z);
 		this.addAllShapes(other.getShapes());
 	}
 	
@@ -100,7 +111,7 @@ public class BV extends AxisAlignedBox {
 		
 		if (dir.x != 0.0) {
 			double tx1 = (leftBottom.x-o.x)/dir.x;
-			double tx2 = (rightTop.x-o.x)/dir.x;
+			double tx2 = (getRightTop().x-o.x)/dir.x;
 			
 			tmin = Math.min(tx1, tx2);
 			tmax = Math.max(tx1, tx2);
@@ -108,14 +119,14 @@ public class BV extends AxisAlignedBox {
 		
 		if (dir.y != 0.0) {
 			double ty1 = (leftBottom.y-o.y)/dir.y;
-			double ty2 = (rightTop.y-o.y)/dir.y;
+			double ty2 = (getRightTop().y-o.y)/dir.y;
 		
 			tmin = Math.max(tmin, Math.min(ty1, ty2));
 			tmax = Math.min(tmax, Math.max(ty1, ty2));
 		}
 		if (dir.z != 0.0) {
 			double tz1 = (leftBottom.z-o.z)/dir.z;
-			double tz2 = (rightTop.z-o.z)/dir.z;
+			double tz2 = (getRightTop().z-o.z)/dir.z;
 			
 			tmin = Math.max(tmin, Math.min(tz1, tz2));
 			tmax = Math.min(tmax, Math.max(tz1, tz2));

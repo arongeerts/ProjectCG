@@ -91,10 +91,14 @@ public class Sphere implements Shape {
 	}
 
 	@Override
-	public BV createNewBV(Transformation transformation) {
-		BV bv = new BV(transformation.transform(new Point(-1,-1,-1))
+	public BV createNewBV() {
+		/*BV bv = new BV(transformation.transform(new Point(-1,-1,-1))
 				, transformation.transform(new Point(1,1,1)));
 		bv.addShape(this);
-		return bv;		
+		return bv;	*/
+		BV bv = new BV(new Point(-1, -1, -1), new Vector(2, 0, 0),
+				new Vector(0, 2, 0), new Vector(0, 0, 2));
+		bv.addShape(this);
+		return bv;
 	}
 }

@@ -111,7 +111,7 @@ public class MeshTriangle implements Shape {
 		return a.scale(1.0/3).add(b.scale(1.0/3).toVector()).add(c.scale(1.0/3).toVector());
 	}
 	
-	public BV createNewBV(Transformation transformation) {
+	public BV createNewBV() {
 		double bias = Math.pow(10, -5);
 		double minx = Math.min(Math.min(a.x - bias, b.x - bias), c.x - bias);
 		double miny = Math.min(Math.min(a.y - bias, b.y - bias), c.y - bias);
@@ -120,8 +120,8 @@ public class MeshTriangle implements Shape {
 		double maxx = Math.max(Math.max(a.x + bias, b.x + bias), c.x + bias);
 		double maxy = Math.max(Math.max(a.y + bias, b.y + bias), c.y + bias);
 		double maxz = Math.max(Math.max(a.z + bias, b.z + bias), c.z + bias);
-		Point rightTop = new Point(maxx, maxy, maxz);
-		BV bv = new BV(leftBottom, rightTop);
+		BV bv = new BV(leftBottom, new Vector(maxx-minx, 0, 0),
+				new Vector(0, maxy-miny, 0), new Vector(0, 0, maxz-minz));
 		bv.addShape(this);
 		return bv;
 	}

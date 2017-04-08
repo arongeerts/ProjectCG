@@ -125,7 +125,12 @@ public class Transformation {
 
 	public Intersection transform(Intersection i) {
 		Point p_t = transform(i.getCoördinate());
-		Vector n_t = transform(i.getNormal());
+		Vector n_t;
+		if (i.getNormal() != null) {
+			n_t = transform(i.getNormal());
+		} else {
+			n_t = null;
+		}
 		Ray ray_t = transform(i.getRay());
 		return new Intersection(p_t, i.getShape(), ray_t, n_t, i.getColor());
 	}

@@ -33,6 +33,7 @@ import math.Vector;
 import sampling.Sample;
 import scene.Scene;
 import scene.SceneBuilder;
+import shape.BVInstance;
 import shape.Intersection;
 import shape.PolygonMesh;
 import shape.Shape;
@@ -57,8 +58,8 @@ public class Renderer {
 	 * @throws InvocationTargetException
 	 */
 	public static void main(String[] arguments) {
-		int width = 140;
-		int height = 140;
+		int width = 640;
+		int height = 640;
 		double sensitivity = 0.004;
 		double gamma = 2.2;
 		boolean gui = true;
@@ -212,7 +213,7 @@ public class Renderer {
 		 *********************************************************************/
 		if (scene == null) {
 			double start = System.currentTimeMillis();
-			scene = SceneBuilder.getExampleScene4();
+			scene = SceneBuilder.getExampleScene2();
 			System.out.println("initialised the scene in: " + (System.currentTimeMillis() - start) +" ms");;
 		}
 		final int sample_dimension = sample_dim;
@@ -366,18 +367,21 @@ public class Renderer {
 			nb += 1;
 			if (i != null) {
 				if (i.getShape() instanceof BV) {
-					List<Pair<BV, Intersection>> children = new ArrayList<>();
-					children.add(new Pair<>((BV) i.getShape(), i));
+					List<Pair<BVInstance, Intersection>> children = new ArrayList<>();
+					children.add(new Pair<>(new BVInstance((BV) i.getShape(),
+							shape.transformation, shape.texture), i));
 					while (! children.isEmpty()) {
-						Pair<BV, Intersection> pair = children.get(0);
-						BV bv = pair.getFirst();
-						Intersection bv_int = pair.getSecond();
+						Pair<BVInstance, Intersection> pair = children.get(0);
+						BVInstance bv_wrapper = pair.getFirst();
+						Intersection bv_intersection = pair.getSecond();
 						
-						if (bv_int != null && (currentClosest == null || bv_int.getDistance() <= currentClosest.getDistance())) {
+						if (bv_intersection != null && (currentClosest == null || bv_intersection.getDistance() <= currentClosest.getDistance())) {
 							
-							if (bv.getChildren().size() != 0) {
-								BV child1 = bv.getChildren().get(0);
-								BV child2 = bv.getChildren().get(1);
+							if (bv_wrapper.bv.getChildren().size() != 0) {
+								BVInstance child1 = new BVInstance(bv_wrapper.bv.getChildren().get(0),
+										bv_wrapper.transformation, bv_wrapper.texture);
+								BVInstance child2 = new BVInstance(bv_wrapper.bv.getChildren().get(1),
+										bv_wrapper.transformation, bv_wrapper.texture);
 								nb += 2;
 								Intersection int1 = child1.getIntersection(ray);
 								Intersection int2 = child2.getIntersection(ray);
@@ -401,12 +405,13 @@ public class Renderer {
 								}
 							} 
 							
-							for (Shape s : bv.getShapes()) {
+							for (Shape s : bv_wrapper.bv.getShapes()) {
 								nb += 1;
-								Intersection currentInt = s.getIntersection(ray);
+								Intersection currentInt = new ShapeInstance(s, bv_wrapper.transformation, bv_wrapper.texture).getIntersection(ray);
 								if (currentInt != null) {
 									if (currentClosest == null || currentClosest.getDistance() > currentInt.getDistance()) {
 										currentClosest = currentInt;	
+										currentClosest.setColor(bv_wrapper.texture.evaluate(s.getUV(bv_wrapper.transformation.transformInverse(currentClosest.getCoördinate()))));
 									}
 								}
 							}
@@ -418,6 +423,7 @@ public class Renderer {
 					if (i != null) {
 						if (currentClosest == null || currentClosest.getDistance() > i.getDistance()) {
 							currentClosest = i;	
+							currentClosest.setColor(shape.texture.evaluate(i.getShape().getUV(i.getCoördinate())));
 						}
 					}
 				}

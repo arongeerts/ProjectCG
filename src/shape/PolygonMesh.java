@@ -25,10 +25,12 @@ public class PolygonMesh implements Shape {
 	public List<Double> us = new ArrayList<>();
 	public List<Double> vs = new ArrayList<>();
 	public List<MeshTriangle> triangles = new ArrayList<>();
+	public BV bv = null;
 	
 
 	public PolygonMesh(String filename) {
-		this.parseObjFile(filename);		
+		this.parseObjFile(filename);
+		bv = BVH.buildBVPolygonMesh(triangles);
 	}
 
 	protected void parseObjFile(String filename) {
@@ -152,10 +154,9 @@ public class PolygonMesh implements Shape {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public BV createNewBV(Transformation transformation) {
-		return BVH.buildBVPolygonMesh((List<Shape>)(List<?>) triangles);
+	public BV createNewBV() {
+		return bv;
 	}
 
 	@Override

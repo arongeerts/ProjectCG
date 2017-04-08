@@ -6,6 +6,7 @@ import math.Ray;
 import math.Transformation;
 import math.Vector;
 import texture.Texture;
+import texture.TransparentTexture;
 import util.Pair;
 
 public class ShapeInstance implements Shape {
@@ -26,8 +27,9 @@ public class ShapeInstance implements Shape {
 		Intersection i = shape.getIntersection(raytransformed);
 		if (i == null) {
 			return null;
+		} if (! (i.getShape() instanceof BV)) {
+			i.setColor(texture.evaluate(i.getShape().getUV(i.getCoördinate())));
 		}
-		i.setColor(texture.evaluate(i.getShape().getUV(i.getCoördinate())));
 		return transformation.transform(i);
 	}
 
@@ -48,8 +50,8 @@ public class ShapeInstance implements Shape {
 	}
 
 	@Override
-	public BV createNewBV(Transformation transformation) {
-		return shape.createNewBV(transformation);
+	public BV createNewBV() {
+		return shape.createNewBV();
 	}
 	
 	@Override

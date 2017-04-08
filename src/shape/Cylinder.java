@@ -107,8 +107,8 @@ public class Cylinder implements Shape {
 	}
 	
 	@Override
-	public BV createNewBV(Transformation transformation) {
-		Point A = transformation.transform(new Point(0,0,0));
+	public BV createNewBV() {
+		/*Point A = transformation.transform(new Point(0,0,0));
 		Point B = transformation.transform(new Point(0,1,0));
 		double radius = transformation.transform(new Vector(1,0,0)).length();
 		double lx = Math.min(A.x, B.x) - radius;
@@ -120,8 +120,11 @@ public class Cylinder implements Shape {
 		Point leftbottom = new Point(lx, ly, lz);
 		Point righttop = new Point(rx, ry, rz);
 		BV bv = new BV(leftbottom, righttop);
+		bv.addShape(new ShapeInstance(this, transformation, texture));
+		return bv;*/
+		BV bv = new BV(new Point(-1,-1,-1), new Vector(2, 0, 0),
+				new Vector(0, 1, 0), new Vector(0, 0, 2));
 		bv.addShape(this);
 		return bv;
-				
 	}
 }

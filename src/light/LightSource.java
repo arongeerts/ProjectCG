@@ -8,6 +8,7 @@ import film.RGBSpectrum;
 import math.Point;
 import math.Ray;
 import math.Vector;
+import shape.BVInstance;
 import shape.Intersection;
 import shape.Shape;
 import shape.ShapeInstance;
@@ -26,15 +27,20 @@ public abstract class LightSource {
 			Intersection i = shape.getIntersection(shadowRay);
 			if (i != null) {
 				if (i.getShape() instanceof BV) {
-					List<Pair<BV, Intersection>> children = new ArrayList<>();
-					children.add(new Pair<>((BV) i.getShape(), i));
+					List<Pair<BVInstance, Intersection>> children = new ArrayList<>();
+					children.add(new Pair<>(new BVInstance((BV) i.getShape(),
+							shape.transformation, shape.texture), i));
 					while (! children.isEmpty()) {
-						BV bv = children.get(0).getFirst();
-						Intersection bv_int = children.get(0).getSecond();
-						if (bv_int != null) {
-							if (bv.getChildren().size() != 0) {
-								BV child1 = bv.getChildren().get(0);
-								BV child2 = bv.getChildren().get(1);
+						Pair<BVInstance, Intersection> pair = children.get(0);
+						BVInstance bv_wrapper = pair.getFirst();
+						Intersection bv_intersection = pair.getSecond();
+						
+						if (bv_intersection != null) {
+							if (bv_wrapper.bv.getChildren().size() != 0) {
+								BVInstance child1 = new BVInstance(bv_wrapper.bv.getChildren().get(0),
+										bv_wrapper.transformation, bv_wrapper.texture);
+								BVInstance child2 = new BVInstance(bv_wrapper.bv.getChildren().get(1),
+										bv_wrapper.transformation, bv_wrapper.texture);
 								Intersection int1 = child1.getIntersection(shadowRay);
 								Intersection int2 = child2.getIntersection(shadowRay);
 								if (int1 == null) {
@@ -53,8 +59,8 @@ public abstract class LightSource {
 									}
 								}
 							} 
-							for (Shape s : bv.getShapes()) {
-								Intersection currentInt = s.getIntersection(shadowRay);
+							for (Shape s : bv_wrapper.bv.getShapes()) {
+								Intersection currentInt = new ShapeInstance(s, bv_wrapper.transformation, bv_wrapper.texture).getIntersection(shadowRay);
 								if (currentInt != null) {
 									return false;
 								}

@@ -4,7 +4,6 @@ import java.util.List;
 
 import acceleration.BVH;
 import light.LightSource;
-import shape.Shape;
 import shape.ShapeInstance;
 
 public class Scene {

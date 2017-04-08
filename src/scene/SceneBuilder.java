@@ -66,7 +66,7 @@ public class SceneBuilder {
 		s.add(new ShapeInstance(floor, t_floor, new UniformColorTexture(new RGBSpectrum(255,255,255))));
 		s.add(new ShapeInstance(wallBehind, t_wall_behind, new TextureMap("dambord.jpg")));
 		ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
-		ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,0,0), new Vector(2,0,0), new Vector(0,2,0)));
+		//ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,0,0), new Vector(2,0,0), new Vector(0,2,0)));
 	
 		//ls.add(new PointLightSource(new Point(-5,5,-3), new RGBSpectrum(255,0,0)));
 		return new Scene(ls, s);
@@ -98,7 +98,7 @@ public class SceneBuilder {
 		s.add(new ShapeInstance(bunny, t1, new TextureMap("bunny.jpg")));
 		s.add(new ShapeInstance(bunny, t2, new TextureMap("wood.jpg")));
 		ls.add(new PointLightSource(new Point(0,0,0), new RGBSpectrum(255,255,255)));
-		return new Scene(ls, s, false);
+		return new Scene(ls, s);
 		
 	}
 
