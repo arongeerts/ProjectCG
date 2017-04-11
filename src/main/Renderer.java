@@ -58,62 +58,64 @@ public class Renderer {
 	 * @throws InvocationTargetException
 	 */
 	public static void main(String[] arguments) {
-		int width = 640;
-		int height = 640;
-		double sensitivity = 0.004;
-		double gamma = 2.2;
-		boolean gui = true;
-		boolean quiet = false;
-		Point origin = new Point(0,0,0);
-		Point destination = new Point(0,0,-1);
-		Vector lookup = new Vector(0, 1, 0);
-		double fov = 60;
-		int sample_dim = 1;
-		String filename = "output.png";
-		RenderMode mode_if_no_input = RenderMode.STANDARD;
+		Map<String, Object> options = new HashMap<>();
+		options.put("width", 		RenderConstants.DEFAULT_WIDTH);
+		options.put("height", 		RenderConstants.DEFAULT_HEIGHT);
+		options.put("origin", 		RenderConstants.DEFAULT_ORIGIN);
+		options.put("destination", 	RenderConstants.DEFAULT_DESTINATION);
+		options.put("lookup", 		RenderConstants.DEFAULT_LOOKUP);
+		options.put("fov", 			RenderConstants.DEFAULT_FOV);
+		options.put("sensitivity", 	RenderConstants.DEFAULT_SENSITIVITY);
+		options.put("gamma", 		RenderConstants.DEFAULT_GAMMA);
+		options.put("mode", 		RenderMode.STANDARD);
+		options.put("sample_dim", 1);
+		options.put("scene", 		SceneBuilder.getExampleScene3());
+		options.put("filename", 	"output.png");
+		options.put("gui", 			true);
+		options.put("quiet", 		false);
+		
 		
 		/**********************************************************************
 		 * Parse the command line arguments
 		 *********************************************************************/
-		Scene scene = null;
 		for (int i = 0; i < arguments.length; ++i) {
 			if (arguments[i].startsWith("-")) {
 				String flag = arguments[i];
 
 				try {
 					if (flag.equals("-width"))
-						width = Integer.parseInt(arguments[++i]);
+						options.put("width", Integer.parseInt(arguments[++i]));
 					else if (flag.equals("-height"))
-						height = Integer.parseInt(arguments[++i]);
+						options.put("height", Integer.parseInt(arguments[++i]));
 					else if (flag.equals("-gui"))
-						gui = Boolean.parseBoolean(arguments[++i]);
+						options.put("gui", Boolean.parseBoolean(arguments[++i]));
 					else if (flag.equals("-quiet"))
-						quiet = Boolean.parseBoolean(arguments[++i]);
+						options.put("quiet", Boolean.parseBoolean(arguments[++i]));
 					else if (flag.equals("-sensitivity"))
-						sensitivity = Double.parseDouble(arguments[++i]);
+						options.put("sensitivity", Double.parseDouble(arguments[++i]));
 					else if (flag.equals("-gamma"))
-						gamma = Double.parseDouble(arguments[++i]);
+						options.put("gamma", Double.parseDouble(arguments[++i]));
 					else if (flag.equals("-origin")) {
 						double x = Double.parseDouble(arguments[++i]);
 						double y = Double.parseDouble(arguments[++i]);
 						double z = Double.parseDouble(arguments[++i]);
-						origin = new Point(x, y, z);
+						options.put("origin", new Point(x, y, z));
 					} else if (flag.equals("-destination")) {
 						double x = Double.parseDouble(arguments[++i]);
 						double y = Double.parseDouble(arguments[++i]);
 						double z = Double.parseDouble(arguments[++i]);
-						destination = new Point(x, y, z);
+						options.put("destination", new Point(x, y, z));
 					} else if (flag.equals("-lookup")) {
 						double x = Double.parseDouble(arguments[++i]);
 						double y = Double.parseDouble(arguments[++i]);
 						double z = Double.parseDouble(arguments[++i]);
-						lookup = new Vector(x, y, z);
+						options.put("lookup", new Vector(x, y, z));
 					} else if (flag.equals("-fov")) {
-						fov = Double.parseDouble(arguments[++i]);
+						options.put("fov", Double.parseDouble(arguments[++i]));
 					} else if (flag.equals("-output")) {
-						filename = arguments[++i];
+						options.put("filename", arguments[++i]);
 					} else if (flag.equals("-samples")) {
-						sample_dim = Integer.parseInt(arguments[++i]);
+						options.put("sample_dimension", Integer.parseInt(arguments[++i]));
 					} else if (flag.equals("-input")) {
 						PolygonMesh p = new PolygonMesh(arguments[++i]);
 						ShapeInstance inst = new ShapeInstance(p,
@@ -123,9 +125,9 @@ public class Renderer {
 						List<LightSource> lightsources = new ArrayList<>();
 						lightsources.add(new PointLightSource(new Point(0,0,2), new RGBSpectrum(255,255,225)));
 						lightsources.add(new AmbientLight(new RGBSpectrum(20,20,20)));
-						scene = new Scene(lightsources, shapes);
+						options.put("scene", new Scene(lightsources, shapes));
 					} else if (flag.equals("-mode")) {
-						mode_if_no_input = RenderMode.parse(arguments[++i]);
+						options.put("mode", RenderMode.parse(arguments[++i]));
 					} else if (flag.equals("-help")) {
 						System.out
 								.println("usage: java -jar cgpracticum.jar\n"
@@ -153,6 +155,38 @@ public class Renderer {
 						+ "This will be skipped!\n", arguments[i]);
 		}
 
+		final Scene scene 				= (Scene) options.get("scene");
+		if (scene.getWidth() != 0) {
+			options.put("width", scene.getWidth());
+		} if (scene.getHeight() != 0) {
+			options.put("height", scene.getHeight());
+		} if (scene.getFov() != 0) {
+			options.put("fov", scene.getFov());
+		} if (scene.getOrigin() != null) {
+			options.put("origin", scene.getOrigin());
+		} if (scene.getDestination() != null) {
+			options.put("destination", scene.getDestination());
+		} if (scene.getLookup() != null) {
+			options.put("lookup", scene.getLookup());
+		} 
+		
+		final int width 				= (int) options.get("width");
+		final int height 				= (int) options.get("height");
+		final double gamma 				= (double) options.get("gamma");
+		final double sensitivity 		= (double) options.get("sensitivity");
+		final int fov 					= (int) options.get("fov");
+		final String filename 			= (String) options.get("filename");
+		final Point origin 				= (Point) options.get("origin");
+		final Point destination 		= (Point) options.get("destination");
+		final Vector lookup 			= (Vector) options.get("lookup");
+		final int sample_dimension 		= (int) options.get("sample_dim");
+		final RenderMode mode 			= (RenderMode) options.get("mode");
+		final PerspectiveCamera camera 	= new PerspectiveCamera(width, height, origin, destination, lookup, fov);
+		final boolean gui 				= (boolean) options.get("gui");
+		final boolean quiet 			= (boolean) options.get("quiet");
+		final List<ShapeInstance> shapes = scene.getShapes();
+		final List<LightSource> lightsources = scene.getLightsources();
+		
 		/**********************************************************************
 		 * Validate the input
 		 *********************************************************************/
@@ -183,9 +217,7 @@ public class Renderer {
 		 * Initialize the camera and graphical user interface
 		 *********************************************************************/
 
-		final PerspectiveCamera camera = new PerspectiveCamera(width, height,
-				origin, destination, lookup, fov);
-
+		
 		// initialize the frame buffer
 		final FrameBuffer buffer = new FrameBuffer(width, height);
 
@@ -208,18 +240,6 @@ public class Renderer {
 
 		final RenderFrame frame = userinterface;
 
-		/**********************************************************************
-		 * INITIALIZE THE SCENE
-		 *********************************************************************/
-		if (scene == null) {
-			double start = System.currentTimeMillis();
-			scene = SceneBuilder.getExampleScene2();
-			System.out.println("initialised the scene in: " + (System.currentTimeMillis() - start) +" ms");;
-		}
-		final int sample_dimension = sample_dim;
-		final List<ShapeInstance> shapes = scene.getShapes();
-		final List<LightSource> lightsources = scene.getLightsources();
-		final RenderMode mode = mode_if_no_input;
 		/**********************************************************************
 		 * Multi-threaded rendering of the scene
 		 *********************************************************************/

@@ -5,12 +5,10 @@ import java.util.List;
 import java.util.Random;
 
 import film.RGBSpectrum;
-import light.AreaLight;
 import light.LightSource;
 import light.PointLightSource;
 import math.Point;
 import math.Transformation;
-import math.Vector;
 import shape.AxisAlignedBox;
 import shape.Cylinder;
 import shape.PolygonMesh;
@@ -37,7 +35,7 @@ public class SceneBuilder {
 		s.add(new ShapeInstance(bol, t2, new UniformColorTexture(255,0,0)));
 		s.add(new ShapeInstance(box, t1, new UniformColorTexture(0,255,0)));
 		ls.add(new PointLightSource(new Point(0,0,0), new RGBSpectrum(255,255,255)));
-		return new Scene(ls, s, false);
+		return new Scene(ls, s);
 	}
 
 	public static Scene getExampleScene2() {
@@ -76,15 +74,28 @@ public class SceneBuilder {
 	public static Scene getExampleScene3() {
 		List<LightSource> ls = new ArrayList<>();
 		List<ShapeInstance> s = new ArrayList<>();
-		Sphere sphere = new Sphere();
-		for (int i=1; i < 20000; i++) {
-			RGBSpectrum color = new RGBSpectrum(new Random().nextInt(50), new Random().nextInt(50), new Random().nextInt(50));
-			Transformation t = Transformation.translate(-2.0 + 4.0 * new Random().nextDouble(), 4*new Random().nextDouble() - 2.0, -4 - 4*new Random().nextDouble()).append(Transformation.scale(0.02,  0.02,  0.02));
-			s.add(new ShapeInstance(sphere, t, new UniformColorTexture(color)));
+		PolygonMesh teapot = new PolygonMesh("teapot.obj");
+		int n = 8;
+		for (int i=0; i < n; i++) {
+			for (int j=0; j <n; j++) {
+				for (int k=0; k<n; k++) {
+					
+					RGBSpectrum color = new RGBSpectrum(new Random().nextInt(50), new Random().nextInt(50), new Random().nextInt(50));
+					Transformation t = Transformation.translate(-2.0 + 4*i * 1.0/n,
+							-2.0 + 4*j * 1.0/n,
+							-2.0 + 4 *k * 1.0/n)
+							.append(Transformation.scale(0.1,0.1,0.1));
+					s.add(new ShapeInstance(teapot, t, new UniformColorTexture(color)));
+				}
+				
+			}
+			
 		}
-		ls.add(new PointLightSource(new Point(4,4,0), new RGBSpectrum(255,255,255)));
-		// place origin of camera at (4,4,0) and destination at (0,0,-4) for good view
-		return new Scene(ls, s);
+		ls.add(new PointLightSource(new Point(4,3,8), new RGBSpectrum(255,255,255)));
+		Scene scene = new Scene(ls, s);
+		scene.setOrigin(new Point(4,3,8));
+		scene.setDestination(new Point(0,0,-1));
+		return scene;
 	}
 	
 	public static Scene getExampleScene4() {
@@ -123,7 +134,7 @@ public class SceneBuilder {
 		List<ShapeInstance> s = new ArrayList<>();
 		ls.add(new PointLightSource(new Point(0,0,0), new RGBSpectrum(255,255,255)));
 		s.add(inst);
-		return new Scene(ls, s, false);
+		return new Scene(ls, s);
 	}
 
 

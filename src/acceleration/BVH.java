@@ -7,7 +7,6 @@ import java.util.List;
 import math.Point;
 import math.Transformation;
 import shape.MeshTriangle;
-import shape.PolygonMesh;
 import shape.Shape;
 import shape.ShapeInstance;
 import texture.TransparentTexture;
@@ -29,14 +28,15 @@ public class BVH {
 			BV bv = wrapper.shape.createNewBV();
 			result.add(new ShapeInstance(bv, wrapper.transformation, wrapper.texture));
 		}
-		if (result.size() > nb_shapes) {
+		/*if (result.size() > nb_shapes) {
 			BV superbv = buildSuper(result);
 			List<ShapeInstance> end_result = new ArrayList<>();
 			end_result.add(new ShapeInstance(superbv, Transformation.IDENTITY, TransparentTexture.get()));
 			return end_result;
-		}
+		}*/
 		return result;
 	}
+	
 	private static BV buildSuper(List<ShapeInstance> mergeQueue) {
 		int currentSplit = 0;
 		while (mergeQueue.size() != 1) {
