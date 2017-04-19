@@ -29,7 +29,11 @@ public class PolygonMesh implements Shape {
 
 	public PolygonMesh(String filename) {
 		this.parseObjFile(filename);
+		double start = System.currentTimeMillis();
 		bv = BVH.buildBVPolygonMesh(triangles);
+		System.out.println(String.format("Built the bounding volume hierarchy in: "
+				+ "\n%f seconds", (System.currentTimeMillis()-start)/1000));
+		
 	}
 
 	protected void parseObjFile(String filename) {

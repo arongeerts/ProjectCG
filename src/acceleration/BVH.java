@@ -21,7 +21,6 @@ public class BVH {
 	
 	private static int nb_shapes = 8;
 	
-	//TODO: fix types + new BV definition with spanning vectors
 	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {
 		List<ShapeInstance> result = new ArrayList<>();
 		for (ShapeInstance wrapper: wrappers) {
@@ -80,21 +79,52 @@ public class BVH {
 		toSplit.add(superbv);
 		while (! toSplit.isEmpty()) {
 			BV parent = toSplit.get(0);
+			
 			if (parent.getShapes().size() > nb_shapes) {
-				Pair<BV, BV> children = split(parent);
+				Pair<BV, BV> children = splitGeometrically(parent);
 				BV first = children.getFirst();
 				BV second = children.getSecond();
 				parent.addChild(first);
 				parent.addChild(second);
-				toSplit.add(first);
-				toSplit.add(second);
+				if (first.getShapes().size() != 0 && second.getShapes().size() != 0) {
+					toSplit.add(1, first);
+					toSplit.add(1, second);
+				}
+				
 			}
-			toSplit.remove(parent);
+			toSplit.remove(0);
 		}
 		return superbv;
 	}
 
-	public static Pair<BV, BV> split(BV superbv) {
+	public static Pair<BV, BV> splitGeometrically(BV superbv) {
+		Point leftBottom = new Point(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+		Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
+		BV first = new BV(leftBottom, rightTop);
+		BV second = new BV(leftBottom, rightTop);
+		double middle = 0.0;
+		if (currentSplit == SPLIT_X) {
+			middle = (superbv.getLeftBottom().x + superbv.getRightTop().x)/2;
+		}
+		else if (currentSplit == SPLIT_Y) {
+			middle = (superbv.getLeftBottom().y + superbv.getRightTop().y)/2;
+		}
+		else if (currentSplit == SPLIT_Z) {
+			middle = (superbv.getLeftBottom().z + superbv.getRightTop().z)/2;
+		}
+		for (Shape shape : superbv.getShapes()) {
+			if ((currentSplit == SPLIT_X && shape.getCentric().x < middle) || (currentSplit == SPLIT_Y && shape.getCentric().y < middle) || (currentSplit == SPLIT_Z && shape.getCentric().z < middle)) {
+				first.expand(shape.createNewBV());
+			} else {
+				second.expand(shape.createNewBV());
+			}
+		}
+		currentSplit = (currentSplit + 1) % 3;
+		superbv.clearShapes();
+		return new Pair<BV, BV>(first, second);
+		
+	}
+	public static Pair<BV, BV> splitMedian(BV superbv) {
 		List<Double> xs = new ArrayList<>();
 		for (Shape shape : superbv.getShapes()) {
 			if (currentSplit == SPLIT_X) {
@@ -126,7 +156,7 @@ public class BVH {
 	}
 
 	
-	public static void quicksort(List<Shape> list, int low, int high, int currentSplit) {
+	private static void quicksort(List<Shape> list, int low, int high, int currentSplit) {
 		if (low >= high) {
 			return;
 		}

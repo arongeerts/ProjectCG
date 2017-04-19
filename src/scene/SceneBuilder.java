@@ -16,12 +16,13 @@ import shape.Cylinder;
 import shape.PolygonMesh;
 import shape.ShapeInstance;
 import shape.Sphere;
+import texture.RepeatedTextureMap;
 import texture.TextureMap;
 import texture.UniformColorTexture;
 
 public class SceneBuilder {
 
-	public static Scene getExampleScene1() {
+	public static Scene buildSimpleAnalyticObjectsScene() {
 		Transformation t1 = Transformation.translate(1, -1, -10).append(
 				Transformation.scale(2, 2, 2));
 		Transformation t2 = Transformation.translate(-2, -3.5, -10).append(
@@ -40,7 +41,7 @@ public class SceneBuilder {
 		return new Scene(ls, s);
 	}
 
-	public static Scene getExampleScene2() {
+	public static Scene getTableScene() {
 		Transformation t_table = Transformation.translate(0, -4, -8).append(
 				Transformation.scale(0.4, 0.4, 0.4));
 		Transformation t_sphere = Transformation.translate(1, -0.7, -7).append(
@@ -64,16 +65,16 @@ public class SceneBuilder {
 		s.add(new ShapeInstance(teapot, t_3, new TextureMap("dambord.jpg")));
 		s.add(new ShapeInstance(table, t_table, new TextureMap("wood.jpg")));
 		s.add(new ShapeInstance(floor, t_floor, new UniformColorTexture(new RGBSpectrum(255,255,255))));
-		s.add(new ShapeInstance(wallBehind, t_wall_behind, new TextureMap("dambord.jpg")));
-		ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
-		//ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,0,0), new Vector(2,0,0), new Vector(0,2,0)));
+		s.add(new ShapeInstance(wallBehind, t_wall_behind, new RepeatedTextureMap("dambord.jpg", 5, 5)));
+		//ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
+		ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,0,0), new Vector(2,0,0), new Vector(0,2,0)));
 	
 		//ls.add(new PointLightSource(new Point(-5,5,-3), new RGBSpectrum(255,0,0)));
 		return new Scene(ls, s);
 		
 	}
 
-	public static Scene getExampleScene3() {
+	public static Scene getTeapotsScene() {
 		List<LightSource> ls = new ArrayList<>();
 		List<ShapeInstance> s = new ArrayList<>();
 		PolygonMesh teapot = new PolygonMesh("teapot.obj");
@@ -100,7 +101,7 @@ public class SceneBuilder {
 		return scene;
 	}
 	
-	public static Scene getExampleScene4() {
+	public static Scene getTwoBunnysScene() {
 		PolygonMesh bunny = new PolygonMesh("bunny.obj");
 		Transformation t1 = Transformation.translate(-1, -1, -4).append(Transformation.scale(-0.3, 0.3, 0.3));
 		Transformation t2 = Transformation.translate(1, -1, -4).append(Transformation.scale(0.3, 0.3, 0.3));
@@ -115,14 +116,17 @@ public class SceneBuilder {
 		
 	}
 
-	public static Scene getExampleScene5() {
-		Transformation t1 = Transformation.translate(0, -1, -6).append(Transformation.scale(3, 3, 3).append(Transformation.rotateY(-50)));
-		PolygonMesh trex = new PolygonMesh("trex.obj");
+	public static Scene getDragon() {
+		Transformation t1 = Transformation.translate(0, -1, -6).append(Transformation.scale(2.5, 2.5, 2.5).append(Transformation.rotateY(-50)));
+		PolygonMesh trex = new PolygonMesh("dragon.obj");
 		List<LightSource> ls = new ArrayList<>();
 		List<ShapeInstance> s = new ArrayList<>();
-		s.add(new ShapeInstance(trex, t1, new UniformColorTexture(255,255,255)));
+		s.add(new ShapeInstance(trex, t1, new UniformColorTexture(255, 150, 0)));
 		ls.add(new PointLightSource(new Point(1,1,0), new RGBSpectrum(255,255,255)));
-		return new Scene(ls, s);
+		Scene scene = new Scene(ls, s);
+		scene.setOrigin(new Point(3, 3, 0));
+		scene.setDestination(new Point(0, 0, -6));
+		return scene;
 	}
 
 	

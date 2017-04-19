@@ -68,8 +68,8 @@ public class Renderer {
 		options.put("sensitivity", 	RenderConstants.DEFAULT_SENSITIVITY);
 		options.put("gamma", 		RenderConstants.DEFAULT_GAMMA);
 		options.put("mode", 		RenderMode.STANDARD);
-		options.put("sample_dim", 1);
-		options.put("scene", 		SceneBuilder.getExampleScene1());
+		options.put("sample_dim", 	3);
+		options.put("scene", 		SceneBuilder.getDragon());
 		options.put("filename", 	"output.png");
 		options.put("gui", 			true);
 		options.put("quiet", 		false);
@@ -345,7 +345,7 @@ public class Renderer {
 				
 				private RGBSpectrum getFalseColor(Intersection currentClosest) {
 					Vector normal = currentClosest.getNormal().scale(0.5);
-					return new RGBSpectrum(0.5 + normal.x, 0.5 + normal.y, 0.5 + normal.z).scale(255.0);
+					return new RGBSpectrum(255*(0.5 + 0.5*normal.x), 255*(0.5 + 0.5*normal.y), (255*(0.5 + 0.5*normal.z)));
 				}
 
 				
