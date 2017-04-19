@@ -1,33 +1,4 @@
 package Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-
-import org.junit.Test;
-
-import acceleration.BV;
-import acceleration.BVH;
-import film.RGBSpectrum;
-import light.AreaLight;
-import light.PointLightSource;
-import main.Renderer;
-import math.Point;
-import math.Ray;
-import math.Transformation;
-import math.Vector;
-import shape.AxisAlignedBox;
-import shape.Cylinder;
-import shape.Intersection;
-import shape.MeshTriangle;
-import shape.PolygonMesh;
-import shape.Shape;
-import shape.Sphere;
-import texture.UniformColorTexture;
-import util.Pair;
 
 public class Tests {
 

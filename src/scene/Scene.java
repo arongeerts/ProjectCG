@@ -3,7 +3,6 @@ package scene;
 import java.util.List;
 
 import acceleration.BVH;
-import camera.PerspectiveCamera;
 import light.LightSource;
 import math.Point;
 import math.Vector;

@@ -3,7 +3,6 @@ package shape;
 import acceleration.BV;
 import math.Point;
 import math.Ray;
-import math.Transformation;
 import math.Vector;
 import util.Pair;
 

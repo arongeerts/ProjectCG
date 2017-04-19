@@ -6,7 +6,6 @@ import math.Ray;
 import math.Transformation;
 import math.Vector;
 import texture.Texture;
-import texture.TransparentTexture;
 import util.Pair;
 
 public class ShapeInstance implements Shape {

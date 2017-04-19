@@ -3,12 +3,10 @@ package light;
 import java.util.List;
 
 import film.RGBSpectrum;
-import main.Renderer;
 import math.Point;
 import math.Ray;
 import math.Vector;
 import shape.Intersection;
-import shape.Shape;
 import shape.ShapeInstance;
 
 public class PointLightSource extends LightSource {

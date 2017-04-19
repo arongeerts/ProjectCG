@@ -13,7 +13,6 @@ import acceleration.BV;
 import acceleration.BVH;
 import math.Point;
 import math.Ray;
-import math.Transformation;
 import math.Vector;
 import util.Pair;
 

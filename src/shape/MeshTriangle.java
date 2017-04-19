@@ -6,7 +6,6 @@ import acceleration.BV;
 import film.RGBSpectrum;
 import math.Point;
 import math.Ray;
-import math.Transformation;
 import math.Vector;
 import texture.Texture;
 import texture.UniformColorTexture;

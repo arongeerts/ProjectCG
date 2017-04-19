@@ -34,7 +34,6 @@ import sampling.Sample;
 import scene.Scene;
 import scene.SceneBuilder;
 import shape.BVInstance;
-import shape.Cylinder;
 import shape.Intersection;
 import shape.PolygonMesh;
 import shape.Shape;
