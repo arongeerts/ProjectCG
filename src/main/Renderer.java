@@ -34,6 +34,7 @@ import sampling.Sample;
 import scene.Scene;
 import scene.SceneBuilder;
 import shape.BVInstance;
+import shape.Cylinder;
 import shape.Intersection;
 import shape.PolygonMesh;
 import shape.Shape;
@@ -69,7 +70,7 @@ public class Renderer {
 		options.put("gamma", 		RenderConstants.DEFAULT_GAMMA);
 		options.put("mode", 		RenderMode.STANDARD);
 		options.put("sample_dim", 1);
-		options.put("scene", 		SceneBuilder.getExampleScene3());
+		options.put("scene", 		SceneBuilder.getExampleScene1());
 		options.put("filename", 	"output.png");
 		options.put("gui", 			true);
 		options.put("quiet", 		false);
@@ -290,6 +291,7 @@ public class Renderer {
 										if (currentClosest != null) {
 											RGBSpectrum totalColor = new RGBSpectrum(0,0,0);
 											if (mode.equals(RenderMode.STANDARD)) {
+												
 												for (LightSource ls : lightsources) {
 													if (ls instanceof AreaLight && sample_dimension != 1) {
 														Poplist<PointLightSource> ps = lightsourceSamples.get((AreaLight) ls);
@@ -302,6 +304,7 @@ public class Renderer {
 														totalColor = totalColor.add(p.getColorContribution(currentClosest, shapes)).scale(sample_dimension);
 														
 													} else {
+														
 														RGBSpectrum colorContribution = ls.getColorContribution(currentClosest, shapes);
 														totalColor = totalColor.add(colorContribution);
 													}

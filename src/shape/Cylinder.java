@@ -122,8 +122,8 @@ public class Cylinder implements Shape {
 		BV bv = new BV(leftbottom, righttop);
 		bv.addShape(new ShapeInstance(this, transformation, texture));
 		return bv;*/
-		BV bv = new BV(new Point(-1,-1,-1), new Vector(2, 0, 0),
-				new Vector(0, 1, 0), new Vector(0, 0, 2));
+		BV bv = new BV(new Point(-2,-1,-2), new Vector(4, 0, 0),
+				new Vector(0, 3, 0), new Vector(0, 0, 4));
 		bv.addShape(this);
 		return bv;
 	}

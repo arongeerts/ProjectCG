@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Random;
 
 import film.RGBSpectrum;
+import light.AreaLight;
 import light.LightSource;
 import light.PointLightSource;
 import math.Point;
 import math.Transformation;
+import math.Vector;
 import shape.AxisAlignedBox;
 import shape.Cylinder;
 import shape.PolygonMesh;
@@ -34,7 +36,7 @@ public class SceneBuilder {
 		s.add(new ShapeInstance(cyl, t3, new UniformColorTexture(0,0,255)));
 		s.add(new ShapeInstance(bol, t2, new UniformColorTexture(255,0,0)));
 		s.add(new ShapeInstance(box, t1, new UniformColorTexture(0,255,0)));
-		ls.add(new PointLightSource(new Point(0,0,0), new RGBSpectrum(255,255,255)));
+		ls.add(new AreaLight(new RGBSpectrum(255,255,255), new Point(0,0,0), new Vector(2,0,0), new Vector(0,2,0)));
 		return new Scene(ls, s);
 	}
 

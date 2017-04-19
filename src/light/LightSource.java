@@ -21,7 +21,7 @@ public abstract class LightSource {
 	public static boolean isPointVisibleFrom(Point my_pos, Point target, List<ShapeInstance> shapes) {
 		Vector direction = my_pos.subtract(target);
 		double selfIntersectionBias = Math.pow(10, -8);
-		target.add(direction.scale(selfIntersectionBias));
+		target = target.add(direction.scale(selfIntersectionBias));
 		Ray shadowRay = new Ray(target, direction);
 		for (ShapeInstance shape : shapes) {
 			Intersection i = shape.getIntersection(shadowRay);
