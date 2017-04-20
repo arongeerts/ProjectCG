@@ -14,12 +14,13 @@ import util.Pair;
 
 public class BVH {
 
-	private static int SPLIT_X = 0;
-	private static int SPLIT_Y = 1;
-	private static int SPLIT_Z = 2;
-	private static int currentSplit = 0;
+	private static final int SPLIT_X = 0;
+	private static final int SPLIT_Y = 1;
+	private static final int SPLIT_Z = 2;
+	private static final int nb_bins_SAH = 4;
+	private static final int nb_shapes = 8;
 	
-	private static int nb_shapes = 8;
+	private static int currentSplit = 0;
 	
 	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {
 		List<ShapeInstance> result = new ArrayList<>();
@@ -89,7 +90,7 @@ public class BVH {
 				if (first.getShapes().size() != 0 && second.getShapes().size() != 0) {
 					toSplit.add(1, first);
 					toSplit.add(1, second);
-				}
+				} 
 				
 			}
 			toSplit.remove(0);
@@ -102,16 +103,7 @@ public class BVH {
 		Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
 		BV first = new BV(leftBottom, rightTop);
 		BV second = new BV(leftBottom, rightTop);
-		double middle = 0.0;
-		if (currentSplit == SPLIT_X) {
-			middle = (superbv.getLeftBottom().x + superbv.getRightTop().x)/2;
-		}
-		else if (currentSplit == SPLIT_Y) {
-			middle = (superbv.getLeftBottom().y + superbv.getRightTop().y)/2;
-		}
-		else if (currentSplit == SPLIT_Z) {
-			middle = (superbv.getLeftBottom().z + superbv.getRightTop().z)/2;
-		}
+		double middle = (getCurrentSplitValue(superbv.getLeftBottom()) + getCurrentSplitValue(superbv.getRightTop()))/2;
 		for (Shape shape : superbv.getShapes()) {
 			if ((currentSplit == SPLIT_X && shape.getCentric().x < middle) || (currentSplit == SPLIT_Y && shape.getCentric().y < middle) || (currentSplit == SPLIT_Z && shape.getCentric().z < middle)) {
 				first.expand(shape.createNewBV());
@@ -122,18 +114,93 @@ public class BVH {
 		currentSplit = (currentSplit + 1) % 3;
 		superbv.clearShapes();
 		return new Pair<BV, BV>(first, second);
+	}
+	
+	public static Pair<BV, BV> splitSAH(BV superbv) {
+		double distance = getCurrentSplitValue(superbv.getRightTop())
+				- getCurrentSplitValue(superbv.getLeftBottom());
+		List<Double> binBoundaries = new ArrayList<>();
+		List<BV> bins = new ArrayList<>();
+		for (int i = 1; i <= nb_bins_SAH ; i++) {
+			binBoundaries.add(getCurrentSplitValue(superbv.getLeftBottom()) + distance * i / nb_bins_SAH);
+			Point leftBottom = new Point(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+			Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
+			BV binBox = new BV(leftBottom, rightTop);
+			bins.add(binBox);
+		}
+		for (Shape shape : superbv.getShapes()) {
+			for (int i = 0 ; i < nb_bins_SAH ; i++) {
+				if (getCurrentSplitValue(shape.getCentric()) < binBoundaries.get(i)) {
+					bins.get(i).expand(shape.createNewBV());
+					break;
+				} 
+			}
+		}
+		double cost = Double.MAX_VALUE;
+		Pair<BV, BV> currentBest = new Pair<>(null, null);
+		
+		for (int i = 1 ; i < nb_bins_SAH; i++) {
+			Point leftBottom = new Point(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+			Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
+			BV newFirst = new BV(leftBottom, rightTop);
+			BV newSecond = new BV(leftBottom, rightTop);
+			for (int j = 0 ; j < i; j++) {
+				newFirst.expand(bins.get(j));
+			}
+			for (int j = i; j < nb_bins_SAH; j++) {
+				newSecond.expand(bins.get(j));
+			}
+			double costNewFirst = newFirst.getSurfaceArea() * newFirst.getShapes().size()/superbv.getSurfaceArea();
+			if (Double.isNaN(costNewFirst)) {
+				costNewFirst = 0;
+			}
+			double costNewSecond = newSecond.getSurfaceArea() * newSecond.getShapes().size()/superbv.getSurfaceArea();
+			if (Double.isNaN(costNewSecond)) {
+				costNewSecond = 0;
+			}
+			double newCost = costNewFirst  + costNewSecond ;
+			if (Double.isNaN(newCost)) {
+				System.out.println("-----------");
+				System.out.println(String.format("newFirst: %f\nnewSecond: %f\nsuperbv: %f\n", newFirst.getSurfaceArea(), newSecond.getSurfaceArea(), superbv.getSurfaceArea()));
+				System.out.println(bins.get(1).getLeftBottom());
+				System.out.println(bins.get(1).getRightTop());
+				System.out.println(bins.get(2).getLeftBottom());
+				System.out.println(bins.get(2).getRightTop());
+				System.out.println(bins.get(3).getLeftBottom());
+				System.out.println(bins.get(3).getRightTop());
+			}
+			
+			if (newCost < cost) {
+				cost = newCost;
+				currentBest = new Pair<>(newFirst, newSecond);
+			} 
+		}
+		currentSplit = (currentSplit + 1) % 3;
+		superbv.clearShapes();
+		return currentBest;
+		/*// work with geometrical splitting, not in numbers
+		int nb_shapes = superbv.getShapes().size();
+		quicksort(superbv.getShapes(), 0, nb_shapes - 1, currentSplit);
+		List<BV> binBoundingBoxes = new ArrayList<>();
+		for (int i = 1; i <= nb_bins_SAH ; i++) {
+			Point leftBottom = new Point(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+			Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
+			BV binBox = new BV(leftBottom, rightTop);
+			for (int j = 0; j < nb_shapes * i / nb_bins_SAH ; j++) {
+				// java get a linear operation? otherwise, create poplist
+				binBox.expand(superbv.getShapes().get(j).createNewBV());
+				binBoundingBoxes.add(binBox);
+			}
+		}
+		for (int i = 0; i <= nb_bins_SAH ; i++) {
+			
+		}*/
 		
 	}
 	public static Pair<BV, BV> splitMedian(BV superbv) {
 		List<Double> xs = new ArrayList<>();
 		for (Shape shape : superbv.getShapes()) {
-			if (currentSplit == SPLIT_X) {
-				xs.add(shape.getCentric().x);
-			} else if (currentSplit == SPLIT_Y) {
-				xs.add(shape.getCentric().y);
-			} else if (currentSplit == SPLIT_Z){
-				xs.add(shape.getCentric().z);
-			}
+			xs.add(getCurrentSplitValue(shape.getCentric()));
 		}
 		Double[] xs2 = new Double[superbv.getShapes().size()];
 		xs2 = xs.toArray(xs2);
@@ -156,7 +223,7 @@ public class BVH {
 	}
 
 	
-	private static void quicksort(List<Shape> list, int low, int high, int currentSplit) {
+	public static void quicksort(List<Shape> list, int low, int high, int currentSplit) {
 		if (low >= high) {
 			return;
 		}
@@ -228,5 +295,16 @@ public class BVH {
 			
 		}
 		
+	}
+	
+	private static double getCurrentSplitValue(Point p) {
+		if (currentSplit == SPLIT_X) {
+			return p.x;
+		} else if (currentSplit == SPLIT_Y) {
+			return p.y;
+		} else if (currentSplit == SPLIT_Z){
+			return p.z;
+		}
+		return 0.0;
 	}
 }

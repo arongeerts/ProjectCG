@@ -101,7 +101,7 @@ public class SceneBuilder {
 		return scene;
 	}
 	
-	public static Scene getTwoBunnysScene() {
+	public static Scene getTwoBunnys() {
 		PolygonMesh bunny = new PolygonMesh("bunny.obj");
 		Transformation t1 = Transformation.translate(-1, -1, -4).append(Transformation.scale(-0.3, 0.3, 0.3));
 		Transformation t2 = Transformation.translate(1, -1, -4).append(Transformation.scale(0.3, 0.3, 0.3));

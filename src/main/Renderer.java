@@ -67,8 +67,8 @@ public class Renderer {
 		options.put("fov", 			RenderConstants.DEFAULT_FOV);
 		options.put("sensitivity", 	RenderConstants.DEFAULT_SENSITIVITY);
 		options.put("gamma", 		RenderConstants.DEFAULT_GAMMA);
-		options.put("mode", 		RenderMode.STANDARD);
-		options.put("sample_dim", 	3);
+		options.put("mode", 		RenderMode.ACCELERATION);
+		options.put("sample_dim", 	1);
 		options.put("scene", 		SceneBuilder.getDragon());
 		options.put("filename", 	"output.png");
 		options.put("gui", 			true);

@@ -98,6 +98,17 @@ public class BV extends AxisAlignedBox {
 		this.addAllShapes(other.getShapes());
 	}
 	
+	public double getSurfaceArea() {
+		double sides = x.length() * y.length() * 2;
+		double sides2 = z.length() * y.length() * 2;
+		double sides3 = x.length() * z.length() * 2;
+		double result = 0.25*(sides + sides2 + sides3);
+		if (result == 0 || Double.isNaN(result)) {
+			System.out.println("surface area is 0");
+		}
+		return result;
+	}
+	
 	@Override
 	public Intersection getIntersection(Ray ray) {
 		if (ray == null) {
