@@ -1,2 +1,5 @@
+# images
 *.png
+
+#class files
 *.class
