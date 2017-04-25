@@ -6,6 +6,7 @@ import java.util.List;
 
 import math.Point;
 import math.Transformation;
+import shape.BVInstance;
 import shape.MeshTriangle;
 import shape.Shape;
 import shape.ShapeInstance;
@@ -18,15 +19,15 @@ public class BVH {
 	private static final int SPLIT_Y = 1;
 	private static final int SPLIT_Z = 2;
 	private static final int nb_bins_SAH = 4;
-	private static final int nb_shapes = 8;
+	private static final int nb_shapes = 1;
 	
 	private static int currentSplit = 0;
 	
 	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {
-		List<ShapeInstance> result = new ArrayList<>();
+		List<BVInstance> result = new ArrayList<>();
 		for (ShapeInstance wrapper: wrappers) {
 			BV bv = wrapper.shape.createNewBV();
-			result.add(new ShapeInstance(bv, wrapper.transformation, wrapper.texture));
+			result.add(new BVInstance(bv, wrapper.transformation, wrapper.texture));
 		}
 		/*if (result.size() > nb_shapes) {
 			BV superbv = buildSuper(result);
@@ -34,9 +35,61 @@ public class BVH {
 			end_result.add(new ShapeInstance(superbv, Transformation.IDENTITY, TransparentTexture.get()));
 			return end_result;
 		}*/
-		return result;
+		if (result.size() > nb_shapes) {
+			ShapeInstance superbv = buildSuper3(result);
+			List<ShapeInstance> end_result = new ArrayList<>();
+			end_result.add(superbv);
+			return end_result;
+		}
+		return (List<ShapeInstance>) (List<?>) result;
 	}
 	
+	private static BVInstance buildSuper3(List<BVInstance> shapes) {
+		Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
+		Point leftBottom = new Point(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+		BV superbv = new BV(leftBottom, rightTop);
+		for (BVInstance bv_inst : shapes) {
+			BV transformed = bv_inst.bv.getTransformedBV(bv_inst.transformation);
+			transformed.addShape(bv_inst);
+			superbv.expand(transformed);
+		}
+		System.out.println("initially: ");
+		System.out.println(superbv.getShapes().size());
+		List<BV> toSplit = new ArrayList<>();
+		
+		toSplit.add(superbv);
+		while (! toSplit.isEmpty()) {
+			BV parent = toSplit.get(0);
+			
+			if (parent.getShapes().size() > nb_shapes) {
+				Pair<BV, BV> children = splitGeometrically(parent);
+				BV first = children.getFirst();
+				BV second = children.getSecond();
+				
+				if (first.getShapes().size() != 0 && second.getShapes().size() != 0) {
+					parent.clearShapes();
+					parent.addChild(first);
+					parent.addChild(second);
+					toSplit.add(1, first);
+					toSplit.add(1, second);
+				}
+				
+			}
+			toSplit.remove(0);
+		}
+		return new BVInstance(superbv, Transformation.IDENTITY, TransparentTexture.get());
+		
+	}
+	
+	private static ShapeInstance buildSuper2(List<ShapeInstance> shapes) {
+		int currentSplit = 0;
+		while (shapes.size() > 1) {
+			mergeFirstTwo2(shapes, currentSplit);
+			currentSplit = (currentSplit + 1) % 3;
+		}
+		return shapes.get(0);
+		
+	}
 	private static BV buildSuper(List<ShapeInstance> mergeQueue) {
 		int currentSplit = 0;
 		while (mergeQueue.size() != 1) {
@@ -67,6 +120,29 @@ public class BVH {
 		parent.addChild(second);
 		mergeQueue.add(new ShapeInstance(parent, Transformation.IDENTITY, TransparentTexture.get()));
 	}
+	
+	@SuppressWarnings("unchecked")
+	private static void mergeFirstTwo2(List<ShapeInstance> mergeQueue, int currentSplit) {
+		quicksort((List<Shape>) (List<?>)mergeQueue, 0, mergeQueue.size() - 1, currentSplit);
+		MultiLayeredBVInstance firstInstance = new MultiLayeredBVInstance((BV) mergeQueue.get(0).shape, mergeQueue.get(0).transformation, mergeQueue.get(0).texture);
+		MultiLayeredBVInstance secondInstance = new MultiLayeredBVInstance((BV) mergeQueue.get(1).shape, mergeQueue.get(1).transformation, mergeQueue.get(1).texture);
+		BV first = firstInstance.bv;
+		BV second = secondInstance.bv;
+		double x = Math.min(first.getLeftBottom().x, second.getLeftBottom().x);
+		double y = Math.min(first.getLeftBottom().y, second.getLeftBottom().y);
+		double z = Math.min(first.getLeftBottom().z, second.getLeftBottom().z);
+		double x2 = Math.max(first.getRightTop().x, second.getRightTop().x);
+		double y2 = Math.max(first.getRightTop().y, second.getRightTop().y);
+		double z2 = Math.max(first.getRightTop().z, second.getRightTop().z);
+		Point leftBottom = new Point(x, y, z);
+		Point rightTop = new Point(x2, y2, z2);
+		MultiLayeredBVInstance parent = new MultiLayeredBVInstance(new BV(leftBottom, rightTop), Transformation.IDENTITY, TransparentTexture.get());
+		mergeQueue.remove(0);
+		mergeQueue.remove(0);
+		parent.addChild(firstInstance);
+		parent.addChild(secondInstance);
+		mergeQueue.add(parent);
+	}
 
 	public static BV buildBVPolygonMesh(List<MeshTriangle> triangles) {
 		Point rightTop = new Point(-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
@@ -85,12 +161,14 @@ public class BVH {
 				Pair<BV, BV> children = splitGeometrically(parent);
 				BV first = children.getFirst();
 				BV second = children.getSecond();
-				parent.addChild(first);
-				parent.addChild(second);
+				
 				if (first.getShapes().size() != 0 && second.getShapes().size() != 0) {
+					parent.clearShapes();
+					parent.addChild(first);
+					parent.addChild(second);
 					toSplit.add(1, first);
 					toSplit.add(1, second);
-				} 
+				}
 				
 			}
 			toSplit.remove(0);
@@ -112,7 +190,7 @@ public class BVH {
 			}
 		}
 		currentSplit = (currentSplit + 1) % 3;
-		superbv.clearShapes();
+		
 		return new Pair<BV, BV>(first, second);
 	}
 	
@@ -176,7 +254,6 @@ public class BVH {
 			} 
 		}
 		currentSplit = (currentSplit + 1) % 3;
-		superbv.clearShapes();
 		return currentBest;
 		/*// work with geometrical splitting, not in numbers
 		int nb_shapes = superbv.getShapes().size();
@@ -218,7 +295,6 @@ public class BVH {
 			}
 		}
 		currentSplit = (currentSplit + 1) % 3;
-		superbv.clearShapes();
 		return new Pair<BV, BV>(first, second);
 	}
 

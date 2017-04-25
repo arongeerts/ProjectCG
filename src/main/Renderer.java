@@ -67,9 +67,9 @@ public class Renderer {
 		options.put("fov", 			RenderConstants.DEFAULT_FOV);
 		options.put("sensitivity", 	RenderConstants.DEFAULT_SENSITIVITY);
 		options.put("gamma", 		RenderConstants.DEFAULT_GAMMA);
-		options.put("mode", 		RenderMode.ACCELERATION);
+		options.put("mode", 		RenderMode.STANDARD);
 		options.put("sample_dim", 	1);
-		options.put("scene", 		SceneBuilder.getDragon());
+		options.put("scene", 		SceneBuilder.getTeapotsScene());
 		options.put("filename", 	"output.png");
 		options.put("gui", 			true);
 		options.put("quiet", 		false);
@@ -282,6 +282,7 @@ public class Renderer {
 										
 										// test the scene on intersections
 										Pair<Intersection, Integer> closestIntersection = getClosestIntersection(ray, shapes);
+										
 										Intersection currentClosest = closestIntersection.getFirst();
 										int nb_of_calculated_intersections = closestIntersection.getSecond();
 										//Intersection currentClosest = getClosestIntersection(ray, shapes);
@@ -306,6 +307,7 @@ public class Renderer {
 														
 														RGBSpectrum colorContribution = ls.getColorContribution(currentClosest, shapes);
 														totalColor = totalColor.add(colorContribution);
+														
 													}
 												}
 												buffer.getPixel(x, y).add(totalColor);
@@ -344,7 +346,7 @@ public class Renderer {
 				
 				
 				private RGBSpectrum getFalseColor(Intersection currentClosest) {
-					Vector normal = currentClosest.getNormal().scale(0.5);
+					Vector normal =currentClosest.getNormal().scale(0.5);
 					return new RGBSpectrum(255*(0.5 + 0.5*normal.x), 255*(0.5 + 0.5*normal.y), (255*(0.5 + 0.5*normal.z)));
 				}
 
@@ -386,9 +388,12 @@ public class Renderer {
 		int nb = 0;
 		for (ShapeInstance shape : shapes) {
 			Intersection i = shape.getIntersection(ray);
+			// get the intersection with the right low-level shapeInstance of the MultiLayeredBVInstance
 			nb += 1;
+			
 			if (i != null) {
 				if (i.getShape() instanceof BV) {
+					
 					List<Pair<BVInstance, Intersection>> children = new ArrayList<>();
 					children.add(new Pair<>(new BVInstance((BV) i.getShape(),
 							shape.transformation, shape.texture), i));
@@ -398,7 +403,6 @@ public class Renderer {
 						Intersection bv_intersection = pair.getSecond();
 						
 						if (bv_intersection != null && (currentClosest == null || bv_intersection.getDistance() <= currentClosest.getDistance())) {
-							
 							if (bv_wrapper.bv.getChildren().size() != 0) {
 								BVInstance child1 = new BVInstance(bv_wrapper.bv.getChildren().get(0),
 										bv_wrapper.transformation, bv_wrapper.texture);
@@ -410,9 +414,7 @@ public class Renderer {
 								
 								if (int1 == null) {
 									if (int2 != null) {
-										
 										children.add(1,new Pair<>(child2, int2));
-										
 									}
 								} else if (int2 == null) {
 									children.add(1,new Pair<>(child1, int1));
@@ -428,7 +430,26 @@ public class Renderer {
 							} 
 							
 							for (Shape s : bv_wrapper.bv.getShapes()) {
+								
+								if (s instanceof BVInstance) {
+									Intersection intersect = s.getIntersection(ray);
+									nb += 1;
+									if (intersect != null) {
+										children.add(1,new Pair<BVInstance, Intersection>((BVInstance) s, intersect));
+										
+									}
+									continue;
+								}
+								
 								nb += 1;
+								if (s instanceof BV) {
+									Intersection intersect = s.getIntersection(ray);
+									nb += 1;
+									if (intersect != null) {
+										children.add(1,new Pair<BVInstance, Intersection>(new BVInstance((BV) s, bv_wrapper.transformation, bv_wrapper.texture), intersect));
+									}
+									continue;
+								}
 								Intersection currentInt = new ShapeInstance(s, bv_wrapper.transformation, bv_wrapper.texture).getIntersection(ray);
 								if (currentInt != null) {
 									if (currentClosest == null || currentClosest.getDistance() > currentInt.getDistance()) {
@@ -442,11 +463,9 @@ public class Renderer {
 					}
 				}
 				else {
-					if (i != null) {
-						if (currentClosest == null || currentClosest.getDistance() > i.getDistance()) {
-							currentClosest = i;	
-							currentClosest.setColor(shape.texture.evaluate(i.getShape().getUV(i.getCoördinate())));
-						}
+					if (currentClosest == null || currentClosest.getDistance() > i.getDistance()) {
+						currentClosest = i;	
+						currentClosest.setColor(shape.texture.evaluate(i.getShape().getUV(i.getCoördinate())));
 					}
 				}
 			}

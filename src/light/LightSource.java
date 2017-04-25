@@ -60,6 +60,14 @@ public abstract class LightSource {
 								}
 							} 
 							for (Shape s : bv_wrapper.bv.getShapes()) {
+								if (s instanceof BVInstance) {
+									Intersection intersect = s.getIntersection(shadowRay);
+									if (intersect != null) {
+										children.add(1,new Pair<BVInstance, Intersection>((BVInstance) s, intersect));
+										
+									}
+									continue;
+								}
 								Intersection currentInt = new ShapeInstance(s, bv_wrapper.transformation, bv_wrapper.texture).getIntersection(shadowRay);
 								if (currentInt != null) {
 									return false;

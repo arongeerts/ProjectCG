@@ -94,9 +94,9 @@ public class SceneBuilder {
 			}
 			
 		}
-		ls.add(new PointLightSource(new Point(4,3,8), new RGBSpectrum(255,255,255)));
+		ls.add(new PointLightSource(new Point(2,2,5), new RGBSpectrum(255,255,255)));
 		Scene scene = new Scene(ls, s);
-		scene.setOrigin(new Point(4,3,8));
+		scene.setOrigin(new Point(2,2,5));
 		scene.setDestination(new Point(0,0,-1));
 		return scene;
 	}
@@ -133,14 +133,15 @@ public class SceneBuilder {
 	
 
 	public static Scene getTestScene() {
-		Cylinder cyl = new Cylinder();
-		TextureMap text = new TextureMap("wood.jpg");
-		ShapeInstance inst = new ShapeInstance(cyl, Transformation.translate(0,0,-6), text);
+		PolygonMesh teapot = new PolygonMesh("teapot.obj");
+		Transformation t1 = Transformation.translate(-2, 0, -8);
+		Transformation t2 = Transformation.translate(2, 0, -8);
 		List<LightSource> ls = new ArrayList<>();
 		List<ShapeInstance> s = new ArrayList<>();
+		s.add(new ShapeInstance(teapot, t1, new UniformColorTexture(255, 150, 0)));
+		s.add(new ShapeInstance(teapot, t2, new UniformColorTexture(255, 150, 255)));
 		ls.add(new PointLightSource(new Point(0,0,0), new RGBSpectrum(255,255,255)));
-		s.add(inst);
-		return new Scene(ls, s);
+		return new Scene(ls,s);
 	}
 
 

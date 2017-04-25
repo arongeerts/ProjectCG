@@ -26,9 +26,10 @@ public class ShapeInstance implements Shape {
 		Intersection i = shape.getIntersection(raytransformed);
 		if (i == null) {
 			return null;
-		} if (! (i.getShape() instanceof BV)) {
+		} if (! (i.getShape() instanceof BV && ! (i.getColor() == null))) {
 			i.setColor(texture.evaluate(i.getShape().getUV(i.getCoördinate())));
 		}
+		
 		return transformation.transform(i);
 	}
 

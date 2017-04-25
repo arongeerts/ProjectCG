@@ -5,6 +5,7 @@ import java.util.List;
 
 import math.Point;
 import math.Ray;
+import math.Transformation;
 import math.Vector;
 import shape.AxisAlignedBox;
 import shape.Intersection;
@@ -14,10 +15,10 @@ public class BV extends AxisAlignedBox {
 
 	private List<BV> children = new ArrayList<>();
 	private List<Shape> shapes = new ArrayList<>();
-	Vector x;
-	Vector y;
-	Vector z;
-	Point leftBottom;
+	protected Vector x;
+	protected Vector y;
+	protected Vector z;
+	protected Point leftBottom;
 	
 	public BV(Point leftBottom, Vector x, Vector y, Vector z) {
 		this.leftBottom = leftBottom;
@@ -77,6 +78,11 @@ public class BV extends AxisAlignedBox {
 	
 	public Point getRightTop() {
 		return leftBottom.add(x).add(y).add(z);
+	}
+	
+	@Override
+	public BV createNewBV() {
+		return this;
 	}
 	
 	@Override 
@@ -156,60 +162,37 @@ public class BV extends AxisAlignedBox {
 		return null;
 	}
 	
-	/*public Intersection getIntersection(Ray ray) {
-		Intersection i = super.getIntersection(ray);
-		if (i != null) {
-			Intersection currentClosest = null;
-			int depth = 1;
-			if (children.size() == 0) {
-				for (Shape s : getShapes()) {	
-					Intersection childIntersect = s.getIntersection(ray);
-					if (childIntersect != null) {
-						depth += childIntersect.getDepth() + 1;
-						if (currentClosest == null || childIntersect.getDistance() < currentClosest.getDistance()) {
-							currentClosest = childIntersect;
-						}	
-					}
-				}
-				if (currentClosest != null) {
-					currentClosest.setDepth(depth);
-					return currentClosest;
-				} else {
-					i.setDepth(depth);
-					return i;
-				}
-				
-			} else {
-				Intersection i1 = getChildren().get(0).getIntersection(ray);
-				Intersection i2 = getChildren().get(1).getIntersection(ray);
-				depth += 2;
-				
-				if (i1 == null && i2 == null) {
-					i.setDepth(depth);
-					return i;
-				} else if (i1 == null) {
-					i2.setDepth(i2.getDepth() + depth);
-					return i2;
-				} else if (i2 == null) {
-					i1.setDepth(i1.getDepth() + depth);
-					return i1;
-				} 
-				depth = i1.getDepth() + i2.getDepth();
-				if (i1.getShape() instanceof BV && ! (i2.getShape() instanceof BV)) {
-					i2.setDepth(depth);
-					return i2;
-				} else if (i2.getShape() instanceof BV && ! (i1.getShape() instanceof BV)) {
-					i1.setDepth(depth);
-					return i1;
-				} else if (i1.getDistance() < i2.getDistance()) {
-					i1.setDepth(depth);
-					return i1;
-				} else {
-					i2.setDepth(depth);
-					return i2;
-				}
-			}
+	public BV getTransformedBV(Transformation transformation) {
+		Point lb = transformation.transform(getLeftBottom());
+		Vector newx = transformation.transform(x);
+		Vector newy = transformation.transform(y);
+		Vector newz = transformation.transform(z);
+		List<Point> points = new ArrayList<>();
+		points.add(lb);
+		points.add(lb.add(newx));
+		points.add(lb.add(newy));
+		points.add(lb.add(newz));
+		points.add(lb.add(newx).add(newy));
+		points.add(lb.add(newz).add(newy));
+		points.add(lb.add(newx).add(newz));
+		points.add(lb.add(newx).add(newy).add(newz));
+		double minx = Double.MAX_VALUE;
+		double miny = Double.MAX_VALUE;
+		double minz = Double.MAX_VALUE;
+		double maxx = -Double.MAX_VALUE;
+		double maxy = -Double.MAX_VALUE;
+		double maxz = -Double.MAX_VALUE;
+		for (Point point : points) {
+			minx = Math.min(minx,  point.x);
+			miny = Math.min(miny,  point.y);
+			minz = Math.min(minz,  point.z);
+			maxx = Math.max(maxx,  point.x);
+			maxy = Math.max(maxy,  point.y);
+			maxz = Math.max(maxz,  point.z);	
 		}
-		return null;
-	}*/
+		BV bv = new BV(new Point(minx, miny, minz),
+				new Point(maxx, maxy, maxz));
+		
+		return bv;
+	}
 }
