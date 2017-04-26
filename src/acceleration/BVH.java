@@ -21,12 +21,14 @@ public class BVH {
 	private static final int nb_bins_SAH = 4;
 	private static final int nb_shapes = 8;
 
+	private static Splitter splitter = GeometricalSplitter.get();
 	private static int currentSplit = 0;
 
 	@SuppressWarnings("unchecked")
 	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {
 		List<BVInstance> result = new ArrayList<>();
 		for (ShapeInstance wrapper : wrappers) {
+			System.out.println("started BVH");
 			BV bv = wrapper.shape.createNewBV();
 			result.add(new BVInstance(bv, wrapper.transformation, wrapper.texture));
 		}
@@ -56,7 +58,7 @@ public class BVH {
 			BV parent = toSplit.get(0);
 
 			if (parent.getShapes().size() > nb_shapes) {
-				Pair<BV, BV> children = splitGeometrically(parent);
+				Pair<BV, BV> children = splitter.split(parent);
 				BV first = children.getFirst();
 				BV second = children.getSecond();
 
@@ -67,7 +69,6 @@ public class BVH {
 					toSplit.add(1, first);
 					toSplit.add(1, second);
 				}
-
 			}
 			toSplit.remove(0);
 		}
@@ -86,12 +87,10 @@ public class BVH {
 		toSplit.add(superbv);
 		while (!toSplit.isEmpty()) {
 			BV parent = toSplit.get(0);
-
 			if (parent.getShapes().size() > nb_shapes) {
-				Pair<BV, BV> children = splitGeometrically(parent);
+				Pair<BV, BV> children = splitter.split(parent);
 				BV first = children.getFirst();
 				BV second = children.getSecond();
-
 				if (first.getShapes().size() != 0 && second.getShapes().size() != 0) {
 					parent.clearShapes();
 					parent.addChild(first);
@@ -99,7 +98,6 @@ public class BVH {
 					toSplit.add(1, first);
 					toSplit.add(1, second);
 				}
-
 			}
 			toSplit.remove(0);
 		}
