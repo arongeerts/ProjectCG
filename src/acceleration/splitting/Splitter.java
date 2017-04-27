@@ -1,5 +1,6 @@
-package acceleration;
+package acceleration.splitting;
 
+import acceleration.BV;
 import math.Point;
 import util.Pair;
 
@@ -17,7 +18,7 @@ public abstract class Splitter {
 	
 	public abstract Pair<BV, BV> split(BV parent);
 	
-	public static Splitter get() {
+	public static Splitter get(SplitMode mode) {
 		return instance;
 	}
 	

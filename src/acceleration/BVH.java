@@ -3,6 +3,9 @@ package acceleration;
 import java.util.ArrayList;
 import java.util.List;
 
+import acceleration.splitting.SAHSplitter;
+import acceleration.splitting.SplitMode;
+import acceleration.splitting.Splitter;
 import math.Point;
 import math.Transformation;
 import shape.BVInstance;
@@ -15,7 +18,7 @@ public class BVH {
 
 	private static final int nb_shapes = 8;
 
-	private static Splitter splitter = SAHSplitter.get();
+	private static Splitter splitter = SAHSplitter.get(SplitMode.LONGEST_AXIS);
 	
 	@SuppressWarnings("unchecked")
 	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {

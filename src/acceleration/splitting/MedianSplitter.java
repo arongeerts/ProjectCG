@@ -1,9 +1,10 @@
-package acceleration;
+package acceleration.splitting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import acceleration.BV;
 import math.Point;
 import math.Transformation;
 import shape.BVInstance;
@@ -16,13 +17,47 @@ public class MedianSplitter extends Splitter {
 	static {
 		instance = new MedianSplitter();
 	}
-	
+	private static SplitMode mode;
 	private MedianSplitter(){
 		super();
 	}
 	
+	
 	@Override
 	public Pair<BV, BV> split(BV parent) {
+		if (mode.equals(SplitMode.ALTERNATING)) {
+			return splitAlternating(parent);
+		} else if (mode.equals(SplitMode.ALL_AXIS)) {
+			return splitAllAxes(parent);
+		} else if (mode.equals(SplitMode.LONGEST_AXIS)) {
+			return splitLongest(parent);
+		}
+		return null;
+	}
+	
+	
+	private Pair<BV, BV> splitLongest(BV parent) {
+		double x = parent.getRightTop().x - parent.getLeftBottom().x;
+		double y = parent.getRightTop().y - parent.getLeftBottom().y;
+		double z = parent.getRightTop().z - parent.getLeftBottom().z;
+		if (x >= y && x >= z) {
+			currentSplit = SPLIT_X;
+		} else if (y >= x && y >= z) {
+			currentSplit = SPLIT_Y;
+		} else if (z >= x && z >= y) {
+			currentSplit = SPLIT_Z;
+		}
+		return splitAlternating(parent);
+	}
+
+
+	private Pair<BV, BV> splitAllAxes(BV parent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public Pair<BV, BV> splitAlternating(BV parent) {
 		List<Double> xs = new ArrayList<>();
 		for (Shape shape : parent.getShapes()) {
 			xs.add(getCurrentSplitValue(shape.getCentric()));
@@ -58,7 +93,8 @@ public class MedianSplitter extends Splitter {
 		return new Pair<BV, BV>(first, second);
 	}
 
-	public static Splitter get() {
+	public static Splitter get(SplitMode splitmode) {
+		mode = splitmode;
 		return instance;
 	}
 }
