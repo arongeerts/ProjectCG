@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import math.Point;
+import math.Transformation;
+import shape.BVInstance;
 import shape.Shape;
+import texture.TransparentTexture;
 import util.Pair;
 
 public class SAHSplitter extends Splitter {
@@ -33,6 +36,11 @@ public class SAHSplitter extends Splitter {
 			for (int i = 0; i < nb_bins_SAH; i++) {
 				if (getCurrentSplitValue(shape.getCentric()) < binBoundaries.get(i)) {
 					bins.get(i).expand(shape.createNewBV());
+					if (shape instanceof BVInstance) {
+						BV newbv = shape.createNewBV();
+						newbv.addShape(shape);
+						bins.get(i).addShape(new BVInstance(newbv, Transformation.IDENTITY, TransparentTexture.get()));
+					}
 					break;
 				}
 			}

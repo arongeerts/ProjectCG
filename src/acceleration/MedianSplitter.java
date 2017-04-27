@@ -5,7 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import math.Point;
+import math.Transformation;
+import shape.BVInstance;
 import shape.Shape;
+import texture.TransparentTexture;
 import util.Pair;
 
 public class MedianSplitter extends Splitter {
@@ -37,8 +40,18 @@ public class MedianSplitter extends Splitter {
 					|| (currentSplit == SPLIT_Y && shape.getCentric().y < median)
 					|| (currentSplit == SPLIT_Z && shape.getCentric().z < median)) {
 				first.expand(shape.createNewBV());
+				if (shape instanceof BVInstance) {
+					BV newbv = shape.createNewBV();
+					newbv.addShape(shape);
+					first.addShape(new BVInstance(newbv, Transformation.IDENTITY, TransparentTexture.get()));
+				}
 			} else {
 				second.expand(shape.createNewBV());
+				if (shape instanceof BVInstance) {
+					BV newbv = shape.createNewBV();
+					newbv.addShape(shape);
+					second.addShape(new BVInstance(newbv, Transformation.IDENTITY, TransparentTexture.get()));
+				}
 			}
 		}
 		currentSplit = (currentSplit + 1) % 3;

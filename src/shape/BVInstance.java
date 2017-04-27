@@ -12,4 +12,10 @@ public class BVInstance extends ShapeInstance {
 		super(bv, t, tx);
 		this.bv = bv;
 	}
+	
+	@Override
+	public BV createNewBV() {
+		BV newbv = bv.getTransformedBV(transformation);
+		return newbv;
+	}
 }
