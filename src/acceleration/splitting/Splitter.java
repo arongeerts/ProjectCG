@@ -22,6 +22,36 @@ public abstract class Splitter {
 		return instance;
 	}
 	
+	protected Pair<BV, BV> getBestSplit(Pair<BV, BV> x, Pair<BV, BV> y, Pair<BV, BV> z) {
+		double costx = getCost(x);
+		double costy = getCost(y);
+		double costz = getCost(z);
+		if (costx <= costy && costx <= costz) {
+			return x;
+		}
+		if (costy <= costx && costy <= costz) {
+			return y;
+		}
+		if (costz <= costx && costz <= costy) {
+			return z;
+		}
+		return null;
+	}
+	
+	private double getCost(Pair<BV, BV> pair) {
+		BV first = pair.getFirst();
+		BV second = pair.getSecond();
+		double costFirst = first.getSurfaceArea() * first.getShapes().size();
+		if (Double.isNaN(costFirst)) {
+			costFirst = 0;
+		}
+		double costSecond = second.getSurfaceArea() * second.getShapes().size();
+		if (Double.isNaN(costSecond)) {
+			costSecond = 0;
+		}
+		return costFirst + costSecond;
+	}
+
 	protected static double getCurrentSplitValue(Point p) {
 		if (currentSplit == SPLIT_X) {
 			return p.x;

@@ -18,7 +18,7 @@ public class BVH {
 
 	private static final int nb_shapes = 8;
 
-	private static Splitter splitter = SAHSplitter.get(SplitMode.LONGEST_AXIS);
+	private static Splitter splitter = SAHSplitter.get(SplitMode.ALTERNATING);
 	
 	@SuppressWarnings("unchecked")
 	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {

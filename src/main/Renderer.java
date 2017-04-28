@@ -69,7 +69,7 @@ public class Renderer {
 		options.put("gamma", 		RenderConstants.DEFAULT_GAMMA);
 		options.put("mode", 		RenderMode.ACCELERATION);
 		options.put("sample_dim", 	1);
-		options.put("scene", 		SceneBuilder.getTeapotsScene());
+		options.put("scene", 		SceneBuilder.getDragon());
 		options.put("filename", 	"output.png");
 		options.put("gui", 			true);
 		options.put("quiet", 		false);

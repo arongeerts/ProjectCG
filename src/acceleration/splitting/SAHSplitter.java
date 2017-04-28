@@ -48,8 +48,13 @@ public class SAHSplitter extends Splitter {
 	}
 
 	private Pair<BV, BV> splitAllAxes(BV parent) {
-		// TODO Auto-generated method stub
-		return null;
+		currentSplit = SPLIT_X;
+		Pair<BV, BV> x = splitAlternating(parent);
+		currentSplit = SPLIT_Y;
+		Pair<BV, BV> y = splitAlternating(parent);
+		currentSplit = SPLIT_Z;
+		Pair<BV, BV> z = splitAlternating(parent);
+		return getBestSplit(x, y, z);
 	}
 
 	public Pair<BV, BV> splitAlternating(BV parent) {
