@@ -1,6 +1,7 @@
 package shape;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,12 +43,14 @@ public class PolygonMesh implements Shape {
 			reader = new BufferedReader(new FileReader("src/shape/meshes/" + filename));
 		} catch (FileNotFoundException e1) {
 			try {
-				reader = new BufferedReader(new FileReader("Project/src/shape/meshes/" + filename));
+				reader = new BufferedReader(new FileReader("ProjectCG/src/shape/meshes/" + filename));
 			} catch (FileNotFoundException e2) {
 				try {
-					reader = new BufferedReader(new FileReader(filename));
+					reader = new BufferedReader(new FileReader("../src/shape/meshes/" + filename));
+					
 				} catch (FileNotFoundException e3) {
 					System.out.println("could not find file: " + filename);
+					
 				}
 			}
 			

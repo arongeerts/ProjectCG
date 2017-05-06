@@ -3,6 +3,7 @@ package acceleration;
 import java.util.ArrayList;
 import java.util.List;
 
+import acceleration.splitting.MedianSplitter;
 import acceleration.splitting.SAHSplitter;
 import acceleration.splitting.SplitMode;
 import acceleration.splitting.Splitter;
@@ -18,7 +19,7 @@ public class BVH {
 
 	private static final int nb_shapes = 8;
 
-	private static Splitter splitter = SAHSplitter.get(SplitMode.ALTERNATING);
+	private static Splitter splitter = SAHSplitter.get(SplitMode.ALL_AXIS);
 	
 	@SuppressWarnings("unchecked")
 	public static List<ShapeInstance> createBVH(List<ShapeInstance> wrappers) {
