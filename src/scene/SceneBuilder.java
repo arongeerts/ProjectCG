@@ -130,7 +130,27 @@ public class SceneBuilder {
 	}
 
 	
-	
+	public static Scene generateDragons(double amount) {
+		PolygonMesh dragon = new PolygonMesh("dragon.obj");
+		amount = Math.round(amount);
+		List<LightSource> ls = new ArrayList<>();
+		List<ShapeInstance> s = new ArrayList<>();
+		for (double i = 0.0 ; i <= amount ; i+= 1) {
+			Transformation t = Transformation.translate(-2 + (amount - i)*4/amount, -1, -4)
+					.append(Transformation.scale(0.3, 0.3, 0.3));
+			Random r = new Random();
+			UniformColorTexture tex = new UniformColorTexture(r.nextInt(256), r.nextInt(256), r.nextInt(256));
+			s.add(new ShapeInstance(dragon, t, tex));
+		}
+		Transformation t_floor =  Transformation.translate(0,-1, -4).append(Transformation.scale(13, 1, 10));
+		Transformation t_wall_behind = Transformation.translate(0, 0, -8).append(Transformation.rotateX(90)).append(Transformation.scale(13, 1, 15));
+		PolygonMesh floor = new PolygonMesh("plane.obj");
+		PolygonMesh wallBehind = new PolygonMesh("plane.obj");
+		s.add(new ShapeInstance(floor, t_floor, new UniformColorTexture(new RGBSpectrum(0,255,0))));
+		s.add(new ShapeInstance(wallBehind, t_wall_behind, new UniformColorTexture(255,255,255)));
+		ls.add(new AreaLight(new RGBSpectrum(255,255,255),new Point(2,2,0), new Vector(2,0,0), new Vector(0,0,2)));
+		return new Scene(ls, s);
+	}
 
 	public static Scene getTestScene() {
 		PolygonMesh teapot = new PolygonMesh("teapot.obj");
