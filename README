@@ -1,5 +1,2 @@
-Modeled by Alvaro Luna Bautista and Joel Andersdon.
-
-Downloaded from: http://www.3drender.com/challenges/
-
-Split into seperate models by Niels Billen.
+# ProjectCG
+This repository holds the code for a school project around building a rendering engine and researching the use of acceleration structures in building the scenes.
